@@ -1,0 +1,37 @@
+Copyright 2015-2017, Flatiron Institute
+Authors: See the accompanying documentation
+
+You must distribute these notices with any major portions
+of the software or modified versions thereof.
+
+This software is free for
+academic and non-commercial use. It comes with no warranty
+of any kind (see below). You may modify the software in the 
+context of your research. Please adhere to the 
+following two requests:
+
+(a) Always acknowledge the authors and the Flatiron
+    Institute by citing appropriate publications when 
+    reporting any results obtained using this software. If 
+    you have modified the code, please indicate the 
+    modifications you have made in your reports.
+
+(b) If you redistribute a modified version of the code, 
+    please make it clear which portions are not part of the 
+    core software developed by the authors at the Flatiron 
+    Institute. Please submit improvements of general interest 
+    back to the original authors.
+
+Note that some components of the software may be derived
+from third party source code or may be subject to other 
+licenses. This will be indicated in the relevant source files.
+
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

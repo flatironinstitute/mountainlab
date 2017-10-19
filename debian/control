@@ -1,0 +1,14 @@
+Source: mountainlab
+Maintainer: Witold Wysota <wysota@wysota.org>
+Section: misc
+Standards-Version: 3.9.7
+Build-Depends: debhelper (>=9), qt5-qmake, qt5-default, qtbase5-dev, qtdeclarative5-dev, libfftw3-dev, git, sed
+
+Package: mountainlab
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs, libfftw3-double3
+Recommends:
+Description: A general framework for data analysis, sharing and visualization.
+
+
+

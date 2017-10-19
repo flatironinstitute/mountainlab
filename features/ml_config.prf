@@ -1,0 +1,13 @@
+macx:CONFIG -= app_bundle
+
+#configure directories
+ML_DIR=$$clean_path($${PWD}/..)
+ML_SRCDIR=$${ML_DIR}/cpp
+ML_BINDIR=$${ML_DIR}/bin
+ML_PACKAGESDIR=$${ML_DIR}/packages
+ML_KRONDIR=$${ML_DIR}/kron
+
+load(ml_functions.prf)
+
+
+

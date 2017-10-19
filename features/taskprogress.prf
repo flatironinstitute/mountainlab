@@ -1,0 +1,3 @@
+CONFIG += mlcommon
+MLCOMMON_DIR=$${ML_SRCDIR}/mlcommon
+INCLUDEPATH += $${MLCOMMON_DIR}/include/taskprogress

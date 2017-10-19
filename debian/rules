@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --parallel
+
+#override_dh_auto_install:
+#	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/mountainlab/usr install
+
+override_dh_auto_configure:
+	echo `dh_auto_configure --no-act -- PREFIX=/opt/mountainlab |sed -e 's/-nocache//'`
+	eval `dh_auto_configure --no-act -- PREFIX=/opt/mountainlab |sed -e 's/-nocache//'`
+	
+
+#override_dh_install:
+#	dh_install kron/ /usr/share/mountainlab/kron

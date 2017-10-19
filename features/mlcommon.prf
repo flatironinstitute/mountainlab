@@ -1,0 +1,16 @@
+MLCOMMON_DIR=$${ML_SRCDIR}/mlcommon
+
+QT += network
+
+INCLUDEPATH += $${MLCOMMON_DIR}/include
+INCLUDEPATH += $${MLCOMMON_DIR}/include/cachemanager
+INCLUDEPATH += $${MLCOMMON_DIR}/include/componentmanager
+INCLUDEPATH += $${MLCOMMON_DIR}/include/mda
+
+CONFIG(mlcommon_shared) {
+  LIBS += -L$${MLCOMMON_DIR}/lib -lmlcommon
+} else {
+  MLCOMMONLIB = $${MLCOMMON_DIR}/lib/libmlcommon.a
+  LIBS += $$MLCOMMONLIB
+}
+unix:PRE_TARGETDEPS += $$MLCOMMONLIB

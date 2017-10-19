@@ -1,0 +1,8 @@
+
+# echo argument to console
+defineTest(echo) {
+  msg = $$ARGS
+  system("echo '$$msg'")
+  return (true)
+}
+
