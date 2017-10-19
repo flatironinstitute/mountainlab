@@ -2,9 +2,22 @@
 
 var fs=require('fs');
 
+function print_usage() {
+	console.log ('Usage:');
+	console.log ('mldock install [https://github.com/user/package_name.git#branch:folder] [package_name]');
+	console.log ('mldock update');
+	console.log ('mldock spec');
+	console.log ('mldock [processor_name] --key1=value1 --key2=value2');
+}
+
 var CLP=new CLParams(process.argv);
 
 var arg1=CLP.unnamedParameters[0]||'';
+
+if (!arg1) {
+	print_usage();
+	return;
+}
 
 if (arg1=='update') {
 	update(function() {
@@ -13,8 +26,10 @@ if (arg1=='update') {
 else if (arg1=='install') {
 	var url=CLP.unnamedParameters[1]||'';
 	var name=CLP.unnamedParameters[2]||'';
-	if ((!url)||(!name))
-		throw new Error('Usage: mldock.mp install [url] [name]');
+	if ((!url)||(!name)) {
+		print_usage();
+		return;
+	}
 	install(url,name,function() {
 		update(function() {
 
@@ -28,10 +43,6 @@ else if (arg1=='spec') {
 else {
 	var processor_name=arg1;
 	var spec=read_spec();
-	if (!tmp.success) {
-		throw new Error(tmp.error);
-	}
-	var spec=tmp.spec;
 	var pp=find_processor_from_spec(spec,processor_name);
 	if (!pp) {
 		throw new Error('Processor not found: '+processor_name);
@@ -85,7 +96,7 @@ else {
 
 			var uid=process.getuid();
 			exe_cmd+=' && chown -R '+uid+':'+uid+' /working/outputs';
-			run_docker_container(pp.container_name,docker_options,exe_cmd,{print_console:true},function(aa) {
+			run_docker_container(pp.docker_image_name,docker_options,exe_cmd,{print_console:true},function(aa) {
 				try {
 					if (aa.exit_code!==0) {
 						throw new Error(aa.exit_code);
@@ -127,7 +138,7 @@ else {
 		}
 
 		function cleanup(callback) {
-			run_docker_container(pp.container_name,docker_options,'touch /working/outputs/dummy.txt ; rm /working/outputs/*',{print_console:false},function(aa) {
+			run_docker_container(pp.docker_image_name,docker_options,'touch /working/outputs/dummy.txt ; rm /working/outputs/*',{print_console:false},function(aa) {
 				require('child_process').execSync('rmdir '+working_path+'/outputs');
 				require('child_process').execSync('rmdir '+working_path);
 				callback({success:true});
@@ -137,7 +148,11 @@ else {
 }
 
 function read_spec() {
-	var txt=fs.readFileSync(__dirname+'/mldock.spec','utf-8')||'{processors:[]}';
+	var spec_fname=__dirname+'/mldock.spec';
+	if (!fs.existsSync(spec_fname)) {
+		return {processors:[]};
+	}
+	var txt=fs.readFileSync(spec_fname,'utf-8');
 	var spec=JSON.parse(txt);
 	return spec;
 }
@@ -159,10 +174,11 @@ function move_file_sync(src,dst) {
 }
 
 function create_working_directory(callback) {
-	system_call('mlconfig tmp',{},function(tmp) {
+	system_call('mlconfig tmp',{print_console:false},function(tmp) {
 		if (!tmp.success) {
 			throw new Error("Error in system call: mlconfig tmp");
 		}
+		console.log(tmp);
 		var tmppath=tmp.console_out.trim();
 		var path=tmppath+'/dockerpack_working_'+make_random_id(6);
 		fs.mkdirSync(path);
@@ -234,7 +250,7 @@ function update(callback) {
 
 function adjust_processor(pp,image) {
 	var pp2=JSON.parse(JSON.stringify(pp));
-	pp2.docker_image=image;
+	pp2.docker_image_name=image;
 	pp2.exe_command_within_container=pp.exe_command;
 	pp2.exe_command=__filename+' '+pp.name+' $(arguments)';
 	return pp2;
@@ -377,26 +393,31 @@ function system_call(cmd,opts,callback) {
 	pp.stdout.setEncoding('utf8');
 	pp.stderr.setEncoding('utf8');
 	var console_out='';
-	pp.on('close', function(code) {
+	pp.on('close', function(code,data) {
+		if (data) console_out+=data;
 		if (callback) callback({success:true,console_out:console_out,exit_code:code});
 		callback=0;
 	});
-	pp.on('exit', function(code) {
+	/*
+	//important not to do the following, because we can miss the console output
+	pp.on('exit', function(code,data) {
+		if (data) console_out+=data;
 		if (callback) callback({success:true,console_out:console_out,exit_code:code});
 		callback=0;
 	});
+	*/
 	pp.on('error',function(err) {
 		if (callback) callback({success:false,error:err.message,console_out:console_out,exit_code:-1});
 		callback=0;
 	});
 	pp.stdout.on('data',function(data) {
 		if (opts.print_console)
-			console.log (data);
+			console.log (data.trim());
 		console_out+=data;
 	});
 	pp.stderr.on('data',function(data) {
 		if (opts.print_console)
-			console.log (data);
+			console.log (data.trim());
 		console_out+=data;
 	});
 };
