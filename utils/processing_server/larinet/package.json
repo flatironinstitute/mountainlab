@@ -1,0 +1,21 @@
+{
+  "name": "larinet",
+  "version": "0.0.1",
+  "description": "",
+  "engines": {
+    "node": "6.11.1"
+  },
+  "main": "larinet.js",
+  "scripts": {
+    "start": "node larinet.js"
+  },
+  "dependencies": {
+    "express": "4.15.2"
+  },
+  "repository": {
+  },
+  "keywords": [
+    "mountainlab"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "mpdaemonmonitor",
+  "version": "0.0.1",
+  "description": "Monitor mountainprocess daemons",
+  "engines": {
+    "node": "6.11.1"
+  },
+  "main": "kulelepoller.js",
+  "scripts": {
+    "start": "node kulelepoller.js",
+    "test": "node kulelepoller.js"
+  },
+  "repository": {
+  },
+  "dependencies": {
+  },
+  "keywords": [
+  ],
+  "license": "MIT"
+}
