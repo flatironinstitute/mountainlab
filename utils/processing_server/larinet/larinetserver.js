@@ -13,8 +13,8 @@ if (!('download_base_url' in config)) {
 	config.download_base_url="${base}/raw";
 }
 var download_base_url=config.download_base_url||'';
-var prv_exe=__dirname+'/../../bin/prv';
-var mp_exe=__dirname+'/../../bin/mproc';
+var prv_exe=__dirname+'/../../../bin/prv';
+var mp_exe=__dirname+'/../../../bin/mproc';
 
 if (!data_directory) {
 	console.log ('problem: data_directory is empty.');
