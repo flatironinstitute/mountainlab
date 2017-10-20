@@ -93,6 +93,7 @@ else {
 			var exe_cmd=pp.exe_command_within_container;
 			var arguments_str=make_arguments_str(args);
 			exe_cmd=exe_cmd.split('$(arguments)').join(arguments_str);
+			exe_cmd+=' --_tempdir=/tmp'; //note: this will be the /tmp directory inside the container
 
 			var uid=process.getuid();
 			exe_cmd+=' && chown -R '+uid+':'+uid+' /working/outputs';

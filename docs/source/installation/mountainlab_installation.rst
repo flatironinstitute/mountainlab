@@ -18,13 +18,14 @@ If you are on Ubuntu 16.04 or later, you can get away with using package manager
 	sudo apt-get update
 	sudo apt-get install qtdeclarative5-dev qt5-default qtbase5-dev qtscript5-dev make g++
 
-	sudo apt-get install libfftw3-dev nodejs npm
+	sudo apt-get install libfftw3-dev
+	sudo apt-get install nodejs npm
 	sudo apt-get install python3 python3-pip
 
 	# Note: you may want to use a virtualenv or other system to manage your python packages
 	pip3 install numpy scipy matplotlib pybind11 cppimport
 
-Otherwise, if you are on a different operating system, use the following links installing the prequisites:
+Otherwise, if you are on a different operating system, use the following links for installing the prequisites:
 
 * :doc:`Qt5 (version 5.5 or later) <qt5_installation>` 
 * :doc:`FFTW <fftw_installation>`
@@ -41,14 +42,10 @@ First time:
 
 .. code :: bash
 
-	git clone https://github.com/magland/mountainlab.git
+	git clone https://github.com/flatironinstitute/mountainlab
 	cd mountainlab
 	
-	# check out a specific branch by name
-	git checkout ms4
-	
 	./compile_components.sh
-	# See also nogui_compile.sh to compile only the non-gui components, for example if you are running processing on a non-gui server.
 
 Subsequent updates:
 
@@ -63,7 +60,7 @@ You must add mountainlab/bin to your PATH environment variable. For example appe
 
 .. code :: bash
 
-	export PATH=/path/to/mountainlab/bin:$PATH
+	export PATH=[/path/to/mountainlab]/bin:$PATH
 
 Note: depending on how nodejs is named on your system, you may need to do the following (or something like it):
 
@@ -74,11 +71,7 @@ Note: depending on how nodejs is named on your system, you may need to do the fo
 Testing the installation
 ------------------------
 
-.. code :: bash
-
-	cd mountainlab/examples/001_kron_mountainsort
-
-Then follow the instructions in the instructions.txt file
+TODO: 
 
 If you get stuck
 ----------------
