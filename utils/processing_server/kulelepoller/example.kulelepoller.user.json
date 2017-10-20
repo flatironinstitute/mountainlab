@@ -1,0 +1,6 @@
+{
+  "kulele_url":"https://kulele.herokuapp.com",
+  "kulele_subserver_name":"name",
+  "kulele_subserver_passcode":"secret",
+  "otherserver_url":"http://localhost:5005"
+}
