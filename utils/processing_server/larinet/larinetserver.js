@@ -5,7 +5,7 @@ var m_job_manager=new JobManager();
 
 var config=read_json_file(__dirname+'/larinet.user.json');
 if (!config) {
-	console.log ('Missing, empty, or invalid config file');
+	console.log ('larinetserver.js: Missing, empty, or invalid config file');
 	return;
 }
 var data_directory=config.data_directory||'';

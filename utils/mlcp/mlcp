@@ -27,6 +27,11 @@ if ('mlcps' in CLP.namedParameters)
 
 var ticket=CLP.namedParameters['ticket']||'';
 
+if ((CLP.unnamedParameters.length===0)&&(!ticket)) {
+	print_usage();
+	return;
+}
+
 var settings = require('user-settings').file('.mlcp');
 if (!ticket) {
 	ticket=settings.get('ticket');
