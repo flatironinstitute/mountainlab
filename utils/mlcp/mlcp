@@ -490,6 +490,7 @@ function http_post_json(url,data,headers,callback) {
 				obj=JSON.parse(txt);
 			}
 			catch(err) {
+				console.log (txt);
 				if (callback) callback({success:false,error:'Error parsing json response'});
 				callback=null;
 				return;
