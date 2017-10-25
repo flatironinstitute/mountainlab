@@ -86,10 +86,8 @@ function QueuedJob() {
 		setTimeout(start2,10);
 	}
 	function start2() {
-		var done=false;
 		setTimeout(housekeeping,1000);
 		m_ppp=run_process_and_read_stdout(hopts.mp_exe,['handle-request','--prvbucket_path='+hopts.data_directory,request_fname,response_fname],function(txt) {
-			done=true;
 			remove_file(request_fname);
 			if (!require('fs').existsSync(response_fname)) {
 				m_is_complete=true;
@@ -228,6 +226,21 @@ function larinetserver(req,onclose,callback) {
 	}
 	else if (action=='processor-spec') {
 		processor_spec(req,function(resp) {
+			callback(resp);
+		});
+	}
+	else if (action=='start-download') {
+		start_download(req,function(resp) {
+			callback(resp);
+		});
+	}
+	else if (action=='probe-download') {
+		probe_download(req,function(resp) {
+			callback(resp);
+		});
+	}
+	else if (action=='cancel-download') {
+		cancel_download(req,function(resp) {
 			callback(resp);
 		});
 	}
@@ -384,7 +397,7 @@ function larinetserver(req,onclose,callback) {
 			do_queue_process();
 		}
 		function do_queue_process() {
-			var Jnew=new QueuedJob(hopts);
+			var Jnew=new QueuedJob();
 			Jnew.start(processor_name,inputs,outputs,parameters,resources,opts,function(tmp) {
 				if (!tmp.success) {
 					callback(tmp);
@@ -428,6 +441,57 @@ function larinetserver(req,onclose,callback) {
 		}
 		J.cancel(callback);
 	}
+	function start_download(query,callback) {
+		var address=query.address||'';
+		var ticket=query.ticket||'';
+		var sha1=query.sha1||'';
+		if ((!ticket)||(!sha1)) {
+			callback({success:false,error:'Missing ticket or sha1'});
+			return;
+		}
+		var download_id=make_random_id(10);
+		query.wait_msec=query.wait_msec||0;
+		var Dnew=new Download();
+		Dnew.start(address,{ticket:ticket,sha1:sha1},function(tmp) {
+			if (!tmp.success) {
+				callback(tmp);
+				return;
+			}
+			m_download_manager.addDownload(download_id,Dnew);
+			var check_timer=new Date();
+			check_it();
+			function check_it() {
+				var elapsed=(new Date()) -check_timer;
+				if ((elapsed>=Number(query.wait_msec))||(Dnew.isComplete())) {
+					var resp=make_response_for_D(download_id,Dnew);
+					callback(resp);	
+				}
+				else {
+					setTimeout(check_it,10);
+				}
+			}
+		});
+	}
+	function probe_download(query,callback) {
+		var download_id=query.download_id||'';
+		var D=m_download_manager.download(download_id);
+		if (!D) {
+			callback({success:false,error:'Download with id not found: '+download_id});
+			return;
+		}
+		D.keepAlive();
+		var resp=make_response_for_D(download_id,D);
+		callback(resp);
+	}
+	function cancel_download(query,callback) {
+		var download_id=query.download_id||'';
+		var D=m_download_manager.download(download_id);
+		if (!D) {
+			callback({success:false,error:'Download with id not found: '+download_id});
+			return;
+		}
+		D.cancel(callback);
+	}
 	function processor_spec(query,callback) {
 		var req_fname=make_tmp_json_file(hopts.data_directory);
 		var resp_fname=make_tmp_json_file(hopts.data_directory);
@@ -459,6 +523,14 @@ function larinetserver(req,onclose,callback) {
 		if (J.isComplete())
 			resp.result=J.result();
 		//callback(resp); //fixed on 10/6/17 by jfm (before we were returning undefined)
+		return resp;
+	}
+	function make_response_for_D(download_id,D) {
+		var resp={success:true};
+		resp.download_id=download_id;
+		resp.complete=D.isComplete();
+		if (D.isComplete())
+			resp.result=D.result();
 		return resp;
 	}
 
@@ -586,7 +658,7 @@ function run_process_and_read_stdout(exe,args,callback) {
 	}
 	catch(err) {
 		console.log (err);
-		callback({success:false,error:"Problem launching: "+exe+" "+args.join(" ")});
+		callback('',-1,"Problem launching: "+exe+" "+args.join(" "));
 		return;
 	}
 	var txt='';
@@ -594,7 +666,7 @@ function run_process_and_read_stdout(exe,args,callback) {
 		txt+=chunk;
 	});
 	P.on('close',function(code) {
-		callback(txt);
+		callback(txt,code,'');
 	});
 	return P;
 }
@@ -661,4 +733,90 @@ function receive_json_post(REQ,callback_in) {
 		if (callback) callback(obj);
 		callback=null;
 	});
+}
+
+
+function DownloadManager() {
+	var that=this;
+
+	this.addDownload=function(download_id,D) {m_downloads[download_id]=D;};
+	this.download=function(download_id) {if (download_id in m_downloads) return m_downloads[download_id]; else return null;};
+	this.removeDownload=function(download_id) {removeDownload(download_id);};
+
+	var m_downloads={};
+
+	function removeDownload(download_id) {
+		delete m_downloads[download_id];
+	}
+	
+}
+
+function Download() {
+	var that=this;
+
+	this.start=function(address,opts,callback) {start(address,opts,callback);};
+	this.keepAlive=function() {m_alive_timer=new Date();};
+	this.cancel=function(callback) {cancel(callback);};
+	this.isComplete=function() {return m_is_complete;};
+	this.result=function() {return m_result;};
+	this.elapsedSinceKeepAlive=function() {return (new Date())-m_alive_timer;};
+
+	var m_result=null;
+	var m_alive_timer=new Date();
+	var m_is_complete=false;
+	var m_ppp=null;
+	var hopts=handler_opts;
+
+	function start(address,opts,callback) {
+		setTimeout(housekeeping,1000);
+		var exe='mlcp';
+		try {require('fs').mkdirSync(hopts.data_directory+'/_downloads');} catch(err) {}
+		var sha1=opts.sha1;
+		var output_fname=hopts.data_directory+'/_downloads/'+sha1;
+		m_ppp=run_process_and_read_stdout(exe,[address,output_fname,'--ticket='+opts.ticket],function(txt,code,err) {
+			if (code==0) {
+				if (!require('fs').existsSync(output_fname)) {
+					if (callback) callback({success:false,error:'Output file does not exist: '+output_fname}); callback=0;
+					m_is_complete=true;
+					return;
+				}
+				if (callback) callback({success:true}); callback=0;
+				m_is_complete=true;
+			}
+			else {
+				console.log (txt);
+				if (callback) callback({success:false}); callback='Exit code for mlcp is not zero in download: '+code+': '+err;	callback=0;
+				m_is_complete=true;
+			}
+		});
+	}
+	function cancel(callback) {
+		if (m_is_complete) {
+			callback({success:true}); //already complete
+			return;
+		}
+		if (m_ppp) {
+			console.log ('Canceling download process: '+m_ppp.pid);
+			m_ppp.stdout.pause();
+			m_ppp.kill('SIGTERM');
+			m_is_complete=true;
+			m_result={success:false,error:'Download process canceled'};
+			if (callback) callback({success:true});
+		}
+		else {
+			if (callback) callback({success:false,error:'m_ppp is null.'});
+		}
+	}
+	function housekeeping() {
+		if (m_is_complete) return;
+		var timeout=20000;
+		var elapsed_since_keep_alive=that.elapsedSinceKeepAlive();
+		if (elapsed_since_keep_alive>timeout) {
+			console.log ('Canceling download due to keep-alive timeout');
+			cancel();
+		}
+		else {
+			setTimeout(housekeeping,1000);
+		}
+	}
 }
