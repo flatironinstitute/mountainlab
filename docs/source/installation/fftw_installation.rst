@@ -1,7 +1,7 @@
 FFTW installation
 =================
 
-FFTW is only needed for the bandpass filter processor. If you are on Ubuntu, you can do the following prior to MountainLab compilation:
+FFTW is only needed for the bandpass filter processor for the mountainsort plugin packages. If you are on Ubuntu, you can do the following prior to compilation:
 
 .. code :: bash
 	

@@ -5,11 +5,11 @@ NodeJS is required for various components of MountainLab. If you are on Ubuntu, 
 
 .. code :: bash
 	
-	sudo apt-get install nodejs npm
+	sudo apt-get install nodejs npm nodejs-legacy
 
 Otherwise, visit the `NodeJS home page <https://nodejs.org/en/>`_
 
-Note: depending on how nodejs is named on your system, you may need to do the following (or something like it):
+Note: depending on how nodejs is named on your system, you may need to do the following (or something like it) so that "nodejs" is a recognized command:
 
 .. code :: bash
 	

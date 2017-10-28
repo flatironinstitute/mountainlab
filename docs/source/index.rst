@@ -5,15 +5,15 @@ MountainLab is data processing, sharing and visualization software for scientist
 
 MountainLab is built in layers in order to maintain flexibility and simplicity. The bottom layer allows users to run individual processing commands from a Linux terminal. The top layers allow cloud-based data processing and sharing of analysis pipelines and results through web browser interfaces.
 
-Installation and Getting started
---------------------------------
+Installation
+------------
 
-:doc:`installation/mountainlab_installation`
+:doc:`Installation instructions for MountainLab and optionally MountainSort/MountainView<installation/mountainlab_installation>`
 
 Software components
 -------------------
 
-The software comprises the following components:
+MountainLab comprises the following components:
 
 * :doc:`processing_system` (mproc)
 
@@ -32,13 +32,22 @@ The software comprises the following components:
 
 * :doc:`mda_file_format` (mda)
 
-  - Simple binary file format for n-d arrays
+  - Simple binary file format for n-dimensional arrays
 
 ..
 
-* :doc:`processing_pipelines` (mlp)
+* MLPipeline
 
-  - Create and execute processing pipelines
+  - Create and execute processing pipelines on local machine or via web browser
+  - Register your computer as a processing servers
+
+Components specific to spike sorting
+------------------------------------
+
+* `MountainSort <http://mountainsort.readthedocs.io>`_
+
+  - Plugin package to MountainLab
+  - Provides spike sorting processors
 
 ..
 
@@ -46,13 +55,6 @@ The software comprises the following components:
 
   - Desktop visualization of processing results
   - (Currently specific to spike sorting)
-
-..
-
-* Web framework
- 
-  - Create, exececute and share analysis pipelines via web browser (mlpipeline)
-  - Register custom processing servers (cordion, larinet, kulele)
 
 ..
 

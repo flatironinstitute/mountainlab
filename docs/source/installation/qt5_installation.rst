@@ -6,16 +6,9 @@ At its core, MountainLab uses Qt5, a cross-platform C++ toolkit. You'll need it 
 Using the package manager
 -------------------------
 
-If you are on a later version of Ubuntu (such as 16.04), you can get away with installing Qt5 using the package manager (which is great news). Otherwise, that method may not give a recent enough Qt5 version. In that case (for example if you are on 14.04, or using Mac or other Linux flavor), you should install Qt5 via qt.io website (see below).
+If you are on a later version of Ubuntu (such as 16.04), you can get away with installing Qt5 using the package manager (which is great news, see :doc:`mountainlab_installation`). Otherwise, that method may not give a recent enough Qt5 version. In that case (for example if you are on 14.04, or using Mac or other Linux flavor), you should install Qt5 via qt.io website (see below).
 
-If you've got Ubuntu 16.04 or later (good news):
-
-.. code ::
-
-	sudo apt-get install software-properties-common
-	sudo apt-add-repository ppa:ubuntu-sdk-team/ppa
-	sudo apt-get update
-	sudo apt-get install qtdeclarative5-dev qt5-default qtbase5-dev qtscript5-dev make g++
+If you've got Ubuntu 16.04 or later (good news). See :doc:`mountainlab_installation` 
 
 Installing Qt5 from the www.qt.io
 ---------------------------------
