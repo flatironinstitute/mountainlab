@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install numpy scipy pybind11 cppimport
 
 # Install docker (optional) for using mldock
-RUN apt-get update && apt-get install -y docker.io
+RUN apt-get update && apt-get install -y docker.io && service docker start #somehow we need to manually start docker
 
 # Clone a fresh version of this repo
 ADD fresh_clone/mountainlab /mountainlab
@@ -29,3 +29,6 @@ ENV PATH="/mountainlab/bin:${PATH}"
 # Test
 RUN mproc --help
 RUN mp-list-processors
+
+# Note: run container using --privileged=true in order to run docker inside docker (mldock uses docker)
+CMD mldock install https://github.com/flatironinstitute/mountainsort#master:packages/ms3 ms3 && mp-list-processors

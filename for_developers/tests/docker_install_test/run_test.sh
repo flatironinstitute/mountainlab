@@ -13,4 +13,4 @@ git clone https://github.com/flatironinstitute/mountainlab fresh_clone/mountainl
 docker build -t mountainlab_install_test .
 
 # --privileged=true is needed in order to run docker inside docker
-docker run mountainlab_install_test for_developers/tests/docker_install_test/test_script.sh
+docker run --privileged=true mountainlab_install_test
