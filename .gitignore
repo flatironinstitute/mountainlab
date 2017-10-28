@@ -61,3 +61,6 @@ node_modules
 *.pyc
 .*importhash
 .rendered.*
+
+build
+fresh_clone

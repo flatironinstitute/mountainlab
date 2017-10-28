@@ -23,6 +23,19 @@ Q_LOGGING_CATEGORY(MP, "mproc.main")
 
 bool initialize_processor_manager(ProcessorManager& PM, QString* error_str);
 
+
+void print_usage()
+{
+    printf("Usage:\n");
+    printf("mproc exec [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
+    printf("mproc run [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
+    printf("mproc queue [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
+    printf("mproc list-processors\n");
+    printf("mproc spec [processor_name]\n");
+    printf("mproc test [processor_name]\n");
+    printf("mproc --help");
+}
+
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
@@ -131,7 +144,10 @@ int main(int argc, char* argv[])
     }
     else {
         print_usage(); //print usage information
-        return -1;
+        if (CLP.named_parameters.contains("help"))
+            return 0;
+        else
+            return -1;
     }
 
     return 0;
@@ -149,17 +165,6 @@ void sig_handler(int signum)
     }
     abort();
     */
-}
-
-void print_usage()
-{
-    printf("Usage:\n");
-    printf("mproc exec [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
-    printf("mproc run [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
-    printf("mproc queue [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
-    printf("mproc list-processors\n");
-    printf("mproc spec [processor_name]\n");
-    printf("mproc test [processor_name]\n");
 }
 
 bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
