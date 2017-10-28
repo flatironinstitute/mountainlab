@@ -30,5 +30,9 @@ ENV PATH="/mountainlab/bin:${PATH}"
 RUN mproc --help
 RUN mp-list-processors
 
-# Note: run container using --privileged=true in order to run docker inside docker (mldock uses docker)
-CMD service docker start && mldock install https://github.com/flatironinstitute/mountainsort#master:packages/ms3 ms3 && mp-list-processors
+# Install a package
+RUN cd packages && git clone https://github.com/flatironinstitute/mountainsort && cd mountainsort && ./compile_components.sh
+RUN mp-list-processors
+
+# Test to see if processors are all present
+CMD mp-list-processors
