@@ -31,6 +31,7 @@ RUN mproc --help
 RUN mp-list-processors
 
 # Install a package
+RUN apt-get update && apt-get install -y libfftw3-dev
 RUN cd packages && git clone https://github.com/flatironinstitute/mountainsort && cd mountainsort && ./compile_components.sh
 RUN mp-list-processors
 
