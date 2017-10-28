@@ -33,6 +33,9 @@ RUN mp-list-processors
 # Install a package
 RUN apt-get update && apt-get install -y libfftw3-dev
 RUN pip3 install sklearn
+# Force to rebuild from this point forward so we can always get the latest source code from the plugin package repo (In the docker build command, use --build-arg FORCE_REBUILD_STRING="$(date)")
+ARG FORCE_REBUILD_STRING=default
+RUN export FORCE_REBUILD_STRING="$FORCE_REBUILD_STRING"
 RUN cd packages && git clone https://github.com/flatironinstitute/mountainsort && cd mountainsort && ./compile_components.sh
 RUN mp-list-processors
 

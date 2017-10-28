@@ -10,6 +10,6 @@ if [ -d "fresh_clone" ]; then
 fi
 mkdir fresh_clone
 git clone https://github.com/flatironinstitute/mountainlab fresh_clone/mountainlab
-docker build -t mountainlab_install_test .
+docker build --build-arg FORCE_REBUILD_STRING="$(date)" -t mountainlab_install_test .
 
 docker run mountainlab_install_test
