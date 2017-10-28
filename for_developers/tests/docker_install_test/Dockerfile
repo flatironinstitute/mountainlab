@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install numpy scipy pybind11 cppimport
 
 # Install docker (optional) for using mldock
-RUN apt-get update && apt-get install -y docker.io && service docker start #somehow we need to manually start docker
+# For some reason we need to manually start docker
+RUN apt-get update && apt-get install -y docker.io && service docker start 
 
 # Clone a fresh version of this repo
 ADD fresh_clone/mountainlab /mountainlab
