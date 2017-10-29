@@ -22,6 +22,9 @@ If you are on Ubuntu 16.04 or later, you can get away with using package manager
 	apt-get update
 	apt-get install qtdeclarative5-dev qt5-default qtbase5-dev qtscript5-dev make g++
 
+	# For MLPipeline, you will also need to install the webkit module for Qt
+	sudo apt-get install libqt5webkit5-dev
+
 	# Install nodejs and npm
 	apt-get update
 	apt-get install nodejs npm nodejs-legacy
@@ -119,8 +122,32 @@ Do the following (after following the prerequisite installation instructions abo
 	cd mountainview
 	./compile_components.sh
 
+You must add mountainview/bin to your PATH environment variable.
+
+.. code :: bash
+
 	# Then test to see if this opens the GUI:
 	mountainview
+
+Installing MLPipeline
+---------------------
+
+Do the following (after following the prerequisite installation instructions above)
+
+.. code :: bash
+
+	git clone https://github.com/flatironinstitute/mlpipeline.git
+	cd mlpipeline
+	./compile_components.sh
+
+You must add mlpipeline/bin to your PATH environment variable.
+
+.. code :: bash
+
+	# Then test to see if this opens the GUI:
+	mlpipeline
+
+The first time you run this program, some configuration instructions will appear on the window.
 
 If you get stuck
 ----------------
