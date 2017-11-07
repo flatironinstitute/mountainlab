@@ -36,7 +36,7 @@ MountainLab comprises the following components:
 
 ..
 
-* MLPipeline
+* :doc:`MLPipeline <mlpipeline/mlpipeline_tutorial>`
 
   - Create and execute processing pipelines on local machine or via web browser
   - Register your computer as a processing servers
