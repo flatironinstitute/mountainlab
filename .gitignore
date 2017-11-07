@@ -64,3 +64,6 @@ node_modules
 
 build
 fresh_clone
+
+packages/mountainsort
+packages/msdrift
