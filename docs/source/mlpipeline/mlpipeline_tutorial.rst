@@ -51,7 +51,7 @@ The order of the processing steps does not matter because the system will automa
 Using sub-pipelines
 -------------------
 
-The second type of processing step is a "pipeline" step. This is similar to subroutines in a programming language. 
+The second type of processing step is a "pipeline" step. This is similar to a subroutine in a programming language. 
 
 
 
