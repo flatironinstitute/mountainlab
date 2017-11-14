@@ -185,6 +185,7 @@ bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
         *error_str = "No processor paths found.";
         return false;
     }
+    qDebug(MP) << processor_paths;
 
     PM.setProcessorPaths(processor_paths);
     PM.reloadProcessors();

@@ -1,0 +1,19 @@
+/usr/bin/mda
+/usr/bin/mdaconvert
+/usr/bin/prv
+/usr/bin/mlconfig
+/usr/bin/mproc
+/usr/bin/mp-exec-process
+/usr/bin/mp-list-processors
+/usr/bin/mp-queue-process
+/usr/bin/mp-run-process
+/usr/bin/mp-spec
+/usr/bin/procstat
+/usr/bin/prv
+/usr/bin/prv-create
+/usr/bin/prv-download
+/usr/bin/prv-locate
+/usr/bin/prv-sha1sum
+/usr/bin/prv-stat
+/usr/bin/prv-upload
+matlab/* opt/mountainlab/matlab/
