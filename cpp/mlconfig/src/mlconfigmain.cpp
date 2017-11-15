@@ -173,6 +173,12 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    if ((argc==2)&&(QString(argv[1])=="print")) {
+        QByteArray str=QJsonDocument(config).toJson(QJsonDocument::Indented);
+        printf("%s\n",str.data());
+        return 0;
+    }
+
     QList<MLConfigPage*> pages;
     pages << new Page_tempdir(&config);
     pages << new Page_prv(&config);

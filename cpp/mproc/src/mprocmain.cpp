@@ -170,7 +170,16 @@ void sig_handler(int signum)
 bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
 {
     // Load the processor paths
-    QStringList processor_paths = MLUtil::configResolvedPathList("mountainprocess", "processor_paths");
+    //QStringList processor_paths = MLUtil::configResolvedPathList("mountainprocess", "processor_paths");
+
+    QStringList processor_paths;
+    if (qApp->applicationDirPath()=="/usr/bin") {
+        processor_paths << "/opt/mountainlab/packages";
+    }
+    else {
+        processor_paths << qApp->applicationDirPath()+"/../packages";
+    }
+
     if (processor_paths.isEmpty()) {
         qCCritical(MP) << "No processor paths found.";
         *error_str = "No processor paths found.";
