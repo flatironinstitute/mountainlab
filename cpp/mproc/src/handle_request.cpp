@@ -269,7 +269,8 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
         }
         QString str = qprocess.readAll();
         if (!str.isEmpty()) {
-            qDebug().noquote() << str;
+            printf("%s",str.toUtf8().data());
+            //qDebug().noquote() << str;
         }
         if (qprocess.state() != QProcess::Running) {
             break;
