@@ -916,12 +916,16 @@ QString MLUtil::configResolvedPath(const QString& group, const QString& key)
 
 QStringList MLUtil::configResolvedPathList(const QString& group, const QString& key)
 {
-    QString mountainlab_base_path = MOUNTAINLAB_SRC_PATH;
+    QString mountainlab_base_path = QDir::homePath()+"/.mountainlab";
     QJsonArray array = MLUtil::configValue(group, key).toArray();
     QStringList ret;
     for (int i = 0; i < array.count(); i++) {
-        ret << QDir(mountainlab_base_path).filePath(array[i].toString()); // jfm 9/7/17 -- we no longer use mountainlabBasePath for anything
-        //ret << QDir(MLUtil::mountainlabBasePath()).filePath(array[i].toString());
+        ret << QDir(mountainlab_base_path).filePath(array[i].toString());
+    }
+
+    mountainlab_base_path = MOUNTAINLAB_SRC_PATH;
+    for (int i = 0; i < array.count(); i++) {
+        ret << QDir(mountainlab_base_path).filePath(array[i].toString());
     }
     return ret;
 }

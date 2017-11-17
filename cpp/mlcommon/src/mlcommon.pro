@@ -1,7 +1,11 @@
 QT = core network
 
 DEFINES += USE_REMOTE_READ_MDA
-DEFINES += MOUNTAINLAB_SRC_PATH=\\\"$$PWD/../../..\\\"
+isEmpty(ML_INSTALLPATH) {
+    DEFINES += MOUNTAINLAB_SRC_PATH=\\\"$${ML_DIR}\\\"
+} else {
+    DEFINES += MOUNTAINLAB_SRC_PATH=\\\"$${ML_INSTALLPATH}\\\"
+}
 
 CONFIG += c++11
 CONFIG += staticlib
