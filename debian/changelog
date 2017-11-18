@@ -1,3 +1,9 @@
+mountainlab (0.5.2-alpha1ubuntu1) xenial; urgency=medium
+
+  * Update
+
+ -- Witold Wysota <wysota@wysota.org>  Fri, 17 Nov 2017 17:39:47 +0100
+
 mountainlab (0.5.2-alpha1) xenial; urgency=medium
 
   * Initial Release.
