@@ -1,3 +1,9 @@
+mountainlab (0.5.2-beta2) xenial; urgency=medium
+
+  * Prelim build
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Tue, 21 Nov 2017 04:52:19 -0500
+
 mountainlab (0.5.2-beta1) xenial; urgency=medium
 
   * Prelim build
