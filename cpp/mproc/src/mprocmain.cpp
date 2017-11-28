@@ -195,6 +195,8 @@ bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
         processor_paths << qApp->applicationDirPath()+"/../packages";
     }
 
+    processor_paths << QDir::homePath()+"/.mountainlab/packages";
+
     if (processor_paths.isEmpty()) {
         qCCritical(MP) << "No processor paths found.";
         *error_str = "No processor paths found.";
