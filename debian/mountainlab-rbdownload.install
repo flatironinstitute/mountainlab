@@ -1,2 +1,2 @@
-packages/system/rbdownload/rbdownload.mp opt/mountainlab/packages/rbdownload
-packages/system/rbdownload/node_modules opt/mountainlab/packages/node_modules
+packages/system/rbdownload/rbdownload.mp opt/mountainlab/packages/rbdownload/
+packages/system/rbdownload/node_modules opt/mountainlab/packages/rbdownload/node_modules
