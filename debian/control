@@ -17,3 +17,9 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs, docker.io
 Recommends: octave
 Description: mldock is a tool for mountainlab.
  The mldock tool allows one to run mountainlab processors in docker containers.
+
+Package: mountainlab-rbdownload
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs
+Description: rbdownload is a processor that allows downloading from rawbucket to processing server
+ Enables download from rawbucket to processing server
