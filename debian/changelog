@@ -1,3 +1,9 @@
+mountainlab (0.5.2-beta5) xenial; urgency=medium
+
+  * Fix rbdownload package
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Sat, 02 Dec 2017 06:56:54 -0500
+
 mountainlab (0.5.2-beta4) xenial; urgency=medium
 
   * fix debian install paths for rbdownload
