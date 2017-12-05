@@ -1,3 +1,9 @@
+mountainlab (0.5.2-beta6) xenial; urgency=medium
+
+  * Implement mp-requirements
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Tue, 05 Dec 2017 09:13:05 -0500
+
 mountainlab (0.5.2-beta5) xenial; urgency=medium
 
   * Fix rbdownload package
