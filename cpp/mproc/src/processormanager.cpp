@@ -303,6 +303,7 @@ MLProcessor ProcessorManagerPrivate::create_processor_from_json_object(QJsonObje
     }
 
     P.exe_command = obj["exe_command"].toString();
+    P.requirements_command = obj["requirements_command"].toString();
 
     return P;
 }

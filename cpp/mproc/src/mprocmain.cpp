@@ -47,6 +47,7 @@ void print_usage()
     printf("mproc queue [processor_name] --[param1]=[val1] --[param2]=[val2] ... [--_force_run] [--_request_num_threads=4]\n");
     printf("mproc list-processors\n");
     printf("mproc spec [processor_name]\n");
+    printf("mproc requirements [processor_name]\n");
     printf("mproc test [processor_name]\n");
     printf("mproc --help");
 }
@@ -95,6 +96,12 @@ int main(int argc, char* argv[])
     }
     else if (arg1 == "spec") { // Show the spec for a single processor
         if (spec(arg2))
+            return 0;
+        else
+            return -1;
+    }
+    else if (arg1 == "requirements") { // Show the requirements for a single processor
+        if (requirements(arg2, CLP.named_parameters))
             return 0;
         else
             return -1;
@@ -230,6 +237,31 @@ void silent_message_output(QtMsgType type, const QMessageLogContext& context, co
     Q_UNUSED(context)
     Q_UNUSED(msg)
     return;
+}
+
+bool requirements(QString arg2, const QMap<QString, QVariant> &clp)
+{
+    if (arg2.isEmpty()) {
+        qWarning() << "Processor name is empty.";
+        return false;
+    }
+    qInstallMessageHandler(silent_message_output);
+    ProcessorManager PM;
+    QString errstr;
+    if (!initialize_processor_manager(PM, &errstr)) {
+        return false;
+    }
+    MLProcessor MLP = PM.processor(arg2);
+    if (MLP.requirements_command.isEmpty()) {
+        printf("{}\n");
+        return true;
+    }
+
+    MLProcessInfo info;
+    launch_process_and_wait(MLP, clp, "", info, true);
+    QString json = info.console_output;
+    printf("%s\n", json.toLatin1().data());
+    return true;
 }
 
 bool spec(QString arg2)
@@ -392,7 +424,7 @@ int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>&
     {
         QTime timer;
         timer.start();
-        launch_process_and_wait(MLP, clp, monitor_file_name, info);
+        launch_process_and_wait(MLP, clp, monitor_file_name, info, false);
         double elapsed_sec = timer.elapsed() * 1.0 / 1000;
         if (info.exit_code == 0) {
             qDebug().noquote() << QString("Process completed successfully: %1 (Elapsed: %2 sec)").arg(processor_name).arg(elapsed_sec);
@@ -493,7 +525,7 @@ void remove_output_files(const MLProcessor& MLP, const QMap<QString, QVariant>& 
     }
 }
 
-void launch_process_and_wait(const MLProcessor& MLP, const QMap<QString, QVariant>& clp_in, QString monitor_file_name, MLProcessInfo& info)
+void launch_process_and_wait(const MLProcessor& MLP, const QMap<QString, QVariant>& clp_in, QString monitor_file_name, MLProcessInfo& info, bool requirements_only)
 {
     bool success;
     QString errstr;
@@ -517,6 +549,9 @@ void launch_process_and_wait(const MLProcessor& MLP, const QMap<QString, QVarian
     }
 
     QString exe_command = MLP.exe_command;
+    if (requirements_only) {
+        exe_command = MLP.requirements_command;
+    }
     exe_command.replace(QRegExp("\\$\\(basepath\\)"), MLP.basepath);
     exe_command.replace(QRegExp("\\$\\(tempdir\\)"), tempdir);
     {

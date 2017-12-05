@@ -36,11 +36,12 @@ void sig_handler(int signum);
 
 bool list_processors();
 bool spec(QString arg2);
+bool requirements(QString arg2, const QMap<QString, QVariant> &clp = QMap<QString, QVariant>());
 bool test_processor(QString arg2);
 int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>& clp);
 
 void print_usage();
-void launch_process_and_wait(const MLProcessor& MLP, const QMap<QString, QVariant>& clp, QString monitor_file_name, MLProcessInfo& info);
+void launch_process_and_wait(const MLProcessor& MLP, const QMap<QString, QVariant>& clp, QString monitor_file_name, MLProcessInfo& info, bool requirements_only);
 bool process_already_completed(const MLProcessor& MLP, const QMap<QString, QVariant>& clp);
 void record_completed_process(const MLProcessor& MLP, const QMap<QString, QVariant>& clp);
 QString wait_until_ready_to_run(const MLProcessor& MLP, const QMap<QString, QVariant>& clp, bool* already_completed, bool force_run); //returns monitor file name

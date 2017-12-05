@@ -8,6 +8,7 @@
 /usr/bin/mp-queue-process
 /usr/bin/mp-run-process
 /usr/bin/mp-spec
+/usr/bin/mp-requirements
 /usr/bin/procstat
 /usr/bin/prv
 /usr/bin/prv-create
