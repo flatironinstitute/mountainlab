@@ -1,3 +1,9 @@
+mountainlab (0.5.2-beta7) xenial; urgency=medium
+
+  * do not require = symbol in CLParams
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Tue, 12 Dec 2017 18:04:18 -0500
+
 mountainlab (0.5.2-beta6) xenial; urgency=medium
 
   * Implement mp-requirements
