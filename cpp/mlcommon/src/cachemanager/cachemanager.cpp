@@ -303,8 +303,8 @@ void CacheManager::removeExpiredFiles()
                 if (!creation_timestamp_str.isEmpty()) {
                     //there was a creation timestamp. let's see if it matches.
                     if (QFileInfo(path0).created().toString("yyyy-MM-dd hh:mm:ss") != creation_timestamp_str) {
-                        qCWarning(CM) << QFileInfo(path0).created().toString("yyyy-MM-dd hh:mm:ss") << creation_timestamp_str << path0;
-                        qCWarning(CM) << "Temporary file creation timestamp does not match that in the expiration record. Removing expiration record.";
+                        //qCWarning(CM) << QFileInfo(path0).created().toString("yyyy-MM-dd hh:mm:ss") << creation_timestamp_str << path0;
+                        //qCWarning(CM) << "Temporary file creation timestamp does not match that in the expiration record. Removing expiration record.";
                         QFile::remove(fname);
                         ok = false;
                     }
