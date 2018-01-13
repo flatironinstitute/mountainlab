@@ -1,3 +1,11 @@
+mountainlab (0.5.4) xenial; urgency=medium
+
+  * improved mldock
+  * remove rbdownload
+  * force_run in opts for processor
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Sat, 13 Jan 2018 14:36:47 -0500
+
 mountainlab (0.5.3) xenial; urgency=medium
 
   * remove debug lines
