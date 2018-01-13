@@ -340,18 +340,21 @@ void finalize(QString arg1, const MLProcessor& MLP, const QMap<QString, QVariant
     }
 }
 
-bool cache_outputs(const MLProcessor& MLP)
+bool force_run_opt(const MLProcessor& MLP)
 {
     QJsonObject spec = MLP.spec;
     if (spec.contains("opts")) {
         QJsonObject opts = spec["opts"].toObject();
+        if (opts["force_run"].toBool()) {
+            return true;
+        }
         if (opts.contains("cache_output")) {
             if (!opts["cache_output"].toBool()) {
-                return false;
+                return true;
             }
         }
     }
-    return true; //by default
+    return false; //by default
 }
 
 int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>& clp)
@@ -385,7 +388,7 @@ int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>&
     }
 
     bool force_run = clp.contains("_force_run");
-    if (!cache_outputs(MLP)) {
+    if (force_run_opt(MLP)) {
         force_run = true;
     }
 
