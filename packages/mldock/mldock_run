@@ -39,8 +39,9 @@ function do_run(processor_name,args) {
 				var input0=pp.inputs[ii];
 				var ikey=input0.name;
 				if (ikey in CLP.namedParameters) {
-					docker_options+=' -v '+absolute_path(CLP.namedParameters[ikey])+':/working/inputs/input_'+ikey;
-					args[ikey]='/working/inputs/input_'+ikey;
+					var ext=get_file_extension(CLP.namedParameters[ikey]);
+					docker_options+=' -v '+absolute_path(CLP.namedParameters[ikey])+':/working/inputs/input_'+ikey+'.'+ext;
+					args[ikey]='/working/inputs/input_'+ikey+'.'+ext;
 				}
 				else {
 					if (!input0.optional) {
@@ -52,8 +53,9 @@ function do_run(processor_name,args) {
 				var output0=pp.outputs[ii];
 				var okey=output0.name;
 				if (okey in CLP.namedParameters) {
-					var path0=working_path+'/output_'+okey;
-					args[okey]='/working/outputs/output_'+okey;
+					var ext=get_file_extension(CLP.namedParameters[okey]);
+					var path0=working_path+'/output_'+okey+'.'+ext;
+					args[okey]='/working/outputs/output_'+okey+'.'+ext;
 				}
 				else {
 					if (!output0.optional) {
@@ -77,8 +79,12 @@ function do_run(processor_name,args) {
 			var arguments_str=make_arguments_str(args);
 			exe_cmd=exe_cmd.split('$(arguments)').join(arguments_str);
 			for (var argname in args) {
-				exe_cmd.split('$'+argname+'$').join(args[argname]);
+				exe_cmd=exe_cmd.split('$'+argname+'$').join(args[argname]);
 			}
+			//exe_cmd=exe_cmd.split('(').join('\\(');
+			//exe_cmd=exe_cmd.split(')').join('\\)');
+			//exe_cmd=exe_cmd.split("'").join("\\'");
+			exe_cmd=exe_cmd.split('"').join('\\"');
 			exe_cmd+=' --_tempdir=/tmp'; //note: this will be the /tmp directory inside the container
 
 			var uid=process.getuid();
@@ -102,7 +108,8 @@ function do_run(processor_name,args) {
 						var output0=pp.outputs[ii];
 						var okey=output0.name;
 						if (okey in CLP.namedParameters) {
-							var path0=working_path+'/outputs/output_'+okey;
+							var ext=get_file_extension(CLP.namedParameters[okey]);
+							var path0=working_path+'/outputs/output_'+okey+'.'+ext;
 							console.log ('Moving '+path0+' -> '+CLP.namedParameters[okey]);
 							move_file_sync(path0,CLP.namedParameters[okey]);
 						}
@@ -177,6 +184,14 @@ function create_working_directory(callback) {
 		fs.mkdirSync(path);
 		callback(path);
 	});
+}
+
+function get_file_extension(path) {
+	var list=path.split('/');
+	var fname=list[list.length-1];
+	var list2=fname.split('.');
+	if (list2.length<=1) return 'dat';
+	return list2[list2.length-1];
 }
 
 function absolute_path(path) {
