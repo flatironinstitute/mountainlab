@@ -1,3 +1,9 @@
+mountainlab (0.5.5) xenial; urgency=medium
+
+  * package_url option
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Thu, 25 Jan 2018 08:07:44 -0500
+
 mountainlab (0.5.4) xenial; urgency=medium
 
   * improved mldock
