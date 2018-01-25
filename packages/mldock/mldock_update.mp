@@ -26,6 +26,7 @@ if (arg1=='spec') {
 		processors:[
 			{
 				name:'mldock.update',
+				version:'0.1',
 				inputs:[],
 				outputs:[],
 				parameters:[],
@@ -107,7 +108,7 @@ function install_package(package,callback) {
 			console.error(`Error building docker image for package ${package.name}: `+err);
 			return;
 		}
-		read_package_spec_from_container('mldock/'+package.name,package.prefix,function(err,spec) {
+		read_package_spec_from_container('mldock/'+package.name,package.git_url,package.prefix,function(err,spec) {
 			if (err) {
 				console.error(`Error reading spec from container for package ${package.name}: `+err);
 				return;
@@ -117,7 +118,7 @@ function install_package(package,callback) {
 	});
 }
 
-function read_package_spec_from_container(image_tag,prefix,callback) {
+function read_package_spec_from_container(image_tag,package_url,prefix,callback) {
 	var aaa="echo '[' ; for i in *.spec; do cat \\$i; echo ','; done ; echo '{}]'";
 	var cmd2='docker run -t '+image_tag+' /bin/bash -c "'+aaa+'"';
 	system_call(cmd2,{print_console:false},function(err,tmp2) {
@@ -134,7 +135,7 @@ function read_package_spec_from_container(image_tag,prefix,callback) {
 					var pp=specs[j].processors[k];
 					if (prefix)
 						pp.name=prefix+'.'+pp.name;
-					pp=adjust_processor(pp,image_tag);
+					pp=adjust_processor(pp,image_tag,package_url);
 					processors.push(pp);
 				}
 			}
@@ -143,11 +144,12 @@ function read_package_spec_from_container(image_tag,prefix,callback) {
 	});
 }
 
-function adjust_processor(pp,image_tag) {
+function adjust_processor(pp,image_tag,package_url) {
 	var pp2=JSON.parse(JSON.stringify(pp));
 	pp2.docker_image_tag=image_tag;
 	pp2.exe_command_within_container=pp.exe_command;
 	pp2.exe_command=__dirname+'/mldock_run '+pp.name+' $(arguments)';
+	pp2.package_url=package_url;
 	return pp2;
 }
 

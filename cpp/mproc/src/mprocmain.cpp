@@ -380,6 +380,15 @@ int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>&
         return info.exit_code;
     }
 
+    QString package_url=clp["_package_url"].toString();
+    if (MLP.package_url!=package_url) {
+        info.exit_code=-1;
+        info.error = "Package url does not match: "+MLP.package_url+" <> "+package_url;
+        qCWarning(MP) << info.error;
+        finalize(arg1, MLP, clp, info);
+        return info.exit_code;
+    }
+
     if (!PM.checkParameters(processor_name, clp, &error_str)) {
         info.exit_code = -1;
         info.error = error_str;
@@ -782,6 +791,7 @@ QJsonObject compute_unique_process_object(MLProcessor P, const QVariantMap& para
     obj["mountainprocess_version"] = "0.1";
     obj["processor_name"] = P.name;
     obj["processor_version"] = P.version;
+    obj["package_url"] = P.package_url;
     {
         QJsonObject inputs;
         QStringList input_pnames = P.inputs.keys();

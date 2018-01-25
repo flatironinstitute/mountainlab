@@ -35,6 +35,7 @@ struct MLProcessor {
     QString name;
     QString version;
     QString description;
+    QString package_url;
     QMap<QString, MLParameter> inputs;
     QMap<QString, MLParameter> outputs;
     QMap<QString, MLParameter> parameters;

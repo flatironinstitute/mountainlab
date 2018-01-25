@@ -277,6 +277,7 @@ MLProcessor ProcessorManagerPrivate::create_processor_from_json_object(QJsonObje
     P.name = obj["name"].toString();
     P.version = obj["version"].toString();
     P.description = obj["description"].toString();
+    P.package_url = obj["package_url"].toString();
 
     QJsonArray inputs = obj["inputs"].toArray();
     for (int i = 0; i < inputs.count(); i++) {

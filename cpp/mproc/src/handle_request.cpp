@@ -33,7 +33,7 @@
 Q_LOGGING_CATEGORY(RB, "mp.run_as_bash")
 Q_LOGGING_CATEGORY(HR, "mp.handle_request")
 
-QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString prvbucket_path, ProcessorManager* PM);
+QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_url, QString prvbucket_path, ProcessorManager* PM);
 QJsonObject handle_request_processor_spec(ProcessorManager* PM);
 
 QJsonObject handle_request(const QJsonObject& request, QString prvbucket_path, ProcessorManager* PM)
@@ -56,7 +56,7 @@ QJsonObject handle_request(const QJsonObject& request, QString prvbucket_path, P
         qCInfo(HR) << "Starting handle_request_queue_process: " + processor_name;
         QTime timer;
         timer.start();
-        response = handle_request_queue_process(processor_name, request["inputs"].toObject(), request["outputs"].toObject(), request["parameters"].toObject(), request["resources"].toObject(), prvbucket_path, PM);
+        response = handle_request_queue_process(processor_name, request["inputs"].toObject(), request["outputs"].toObject(), request["parameters"].toObject(), request["resources"].toObject(), request["package_url"].toString(), prvbucket_path, PM);
         qCInfo(HR) << "Done running process: " + processor_name << "Elapsed:" << timer.elapsed();
         return response;
     }
@@ -118,7 +118,7 @@ QJsonObject handle_request_processor_spec(ProcessorManager* PM)
     return response;
 }
 
-QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString prvbucket_path, ProcessorManager* PM)
+QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_url, QString prvbucket_path, ProcessorManager* PM)
 {
     QJsonObject response;
 
@@ -246,6 +246,10 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
     args << QString("--_max_etime_sec=%1").arg(resources["max_etime_sec"].toDouble());
     args << QString("--_max_cputime_sec=%1").arg(resources["max_cputime_sec"].toDouble());
     args << QString("--_max_cpu_pct=%1").arg(resources["max_cpu_pct"].toDouble());
+
+    if (!package_url.isEmpty()) {
+        args << QString("--_package_url=%1").arg(package_url);
+    }
 
     if (resources["force_run"].toBool()) {
         args << "--_force_run";
