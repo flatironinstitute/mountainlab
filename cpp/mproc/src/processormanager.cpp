@@ -315,7 +315,7 @@ MLParameter ProcessorManagerPrivate::create_parameter_from_json_object(QJsonObje
     param.name = obj["name"].toString();
     param.ptype = obj["ptype"].toString();
     param.description = obj["description"].toString();
-    param.optional = obj["optional"].toBool();
+    param.optional = obj["optional"].toVariant().toBool();
     param.default_value = obj["default_value"].toVariant();
     return param;
 }

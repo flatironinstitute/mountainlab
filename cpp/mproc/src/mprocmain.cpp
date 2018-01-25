@@ -295,7 +295,7 @@ bool spec(QString arg2)
 void test_processor(const MLProcessor& MLP)
 {
     QJsonObject spec = MLP.spec;
-    if (!spec["has_test"].toBool()) {
+    if (!spec["has_test"].toVariant().toBool()) {
         printf("%s\n", QString("Processor %1 has no test").arg(MLP.name).toUtf8().data());
     }
     else {
@@ -345,11 +345,11 @@ bool force_run_opt(const MLProcessor& MLP)
     QJsonObject spec = MLP.spec;
     if (spec.contains("opts")) {
         QJsonObject opts = spec["opts"].toObject();
-        if (opts["force_run"].toBool()) {
+        if (opts["force_run"].toVariant().toBool()) {
             return true;
         }
         if (opts.contains("cache_output")) {
-            if (!opts["cache_output"].toBool()) {
+            if (!opts["cache_output"].toVariant().toBool()) {
                 return true;
             }
         }

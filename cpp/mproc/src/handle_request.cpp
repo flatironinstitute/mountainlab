@@ -221,7 +221,7 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
     QMap<QString, QString> output_files;
     foreach (QString key, okeys) {
         if (PP.outputs.contains(key)) {
-            if (outputs[key].toBool()) {
+            if (outputs[key].toVariant().toBool()) {
                 QString fname;
                 if (!prvbucket_path.isEmpty()) {
                     QDir(prvbucket_path).mkdir("_mountainprocess");
@@ -251,7 +251,7 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
         args << QString("--_package_url=%1").arg(package_url);
     }
 
-    if (resources["force_run"].toBool()) {
+    if (resources["force_run"].toVariant().toBool()) {
         args << "--_force_run";
     }
 
@@ -340,7 +340,7 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
             }
         }
     }
-    if (!process_output["success"].toBool()) {
+    if (!process_output["success"].toVariant().toBool()) {
         if (success0) {
             success0 = false;
             error0 = "Process error: " + process_output["error"].toString();
@@ -349,7 +349,7 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
 
     QJsonObject outputs0;
     foreach (QString key, okeys) {
-        if (outputs[key].toBool()) {
+        if (outputs[key].toVariant().toBool()) {
             QString fname = output_files[key];
             if (!wait_for_file_to_exist(fname, 100)) {
                 if (success0) {
