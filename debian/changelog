@@ -1,3 +1,9 @@
+mountainlab (0.5.6) xenial; urgency=medium
+
+  * change toBool to toVariant().toBool for QJsonObject
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Thu, 25 Jan 2018 13:56:52 -0500
+
 mountainlab (0.5.5) xenial; urgency=medium
 
   * package_url option
