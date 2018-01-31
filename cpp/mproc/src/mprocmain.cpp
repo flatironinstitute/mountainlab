@@ -223,6 +223,8 @@ bool list_processors(const QString &pattern)
     if (!initialize_processor_manager(PM, &errstr))
         return false;
 
+    QTextStream qout(stdout);
+
     QStringList pnames = PM.processorNames();
     qSort(pnames);
     QRegExp rxWild(pattern);
@@ -231,7 +233,7 @@ bool list_processors(const QString &pattern)
     rxWild.setPatternSyntax(QRegExp::WildcardUnix);
     foreach (QString pname, pnames) {
         if (pattern.isEmpty() || (rxWild.exactMatch(pname) || rx.exactMatch(pname)))
-            qDebug().noquote() << pname;
+            qout << pname << endl;
     }
     return true;
 }
