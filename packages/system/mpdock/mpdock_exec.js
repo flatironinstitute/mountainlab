@@ -1,46 +1,27 @@
-#!/usr/bin/env nodejs
+exports.mpdock_exec=mpdock_exec;
 
-var fs=require('fs');
-
-function print_usage() {
-	console.log ('Usage:');
-	console.log ('mldock_run [processor_name] --[key1]=[val1] --[key2]=[val2] ...');
-}
-
-mkdir_if_needed(require('os').homedir()+'/.mountainlab')
-var mldock_config_path=require('os').homedir()+'/.mountainlab/mldock';
-mkdir_if_needed(mldock_config_path);
-
-var CLP=new CLParams(process.argv);
-
-var arg1=CLP.unnamedParameters[0]||'';
-
-if (!arg1) {
-	print_usage();
-	return;
-}
-do_run(arg1,CLP.namedParameters);
-
-function do_run(processor_name,args) {
-	var spec=read_spec();
-	if (!spec) {
-		throw new Error('Error reading spec.');
-	}
+function mpdock_exec(processor_name,package_spec,CLP_args,callback) {
+	var spec=package_spec;
 	var pp=find_processor_from_spec(spec,processor_name);
 	if (!pp) {
-		throw new Error('Processor not found: '+processor_name);
+		callback('Processor not found: '+processor_name);
+		return;
 	}
-	create_working_directory(function(working_path) {
-		fs.mkdirSync(working_path+'/outputs');
+	create_working_directory(function(err000,working_path) {
+		if (err000) {
+			callback(err000);
+			return;
+		}
+		require('fs').mkdirSync(working_path+'/outputs');
 		var docker_options='-v '+working_path+'/outputs:/working/outputs';
 		try {
 			var args={};
 			for (var ii in pp.inputs) {
 				var input0=pp.inputs[ii];
 				var ikey=input0.name;
-				if (ikey in CLP.namedParameters) {
-					var ext=get_file_extension(CLP.namedParameters[ikey]);
-					docker_options+=' -v '+absolute_path(CLP.namedParameters[ikey])+':/working/inputs/input_'+ikey+'.'+ext;
+				if (ikey in CLP_args) {
+					var ext=get_file_extension(CLP_args[ikey]);
+					docker_options+=' -v '+absolute_path(CLP_args[ikey])+':/working/inputs/input_'+ikey+'.'+ext;
 					args[ikey]='/working/inputs/input_'+ikey+'.'+ext;
 				}
 				else {
@@ -52,8 +33,8 @@ function do_run(processor_name,args) {
 			for (var ii in pp.outputs) {
 				var output0=pp.outputs[ii];
 				var okey=output0.name;
-				if (okey in CLP.namedParameters) {
-					var ext=get_file_extension(CLP.namedParameters[okey]);
+				if (okey in CLP_args) {
+					var ext=get_file_extension(CLP_args[okey]);
 					var path0=working_path+'/output_'+okey+'.'+ext;
 					args[okey]='/working/outputs/output_'+okey+'.'+ext;
 				}
@@ -66,13 +47,14 @@ function do_run(processor_name,args) {
 			for (var ii in pp.parameters) {
 				var param0=pp.parameters[ii];
 				var pkey=param0.name;
-				if (pkey in CLP.namedParameters) {
-					args[pkey]=CLP.namedParameters[pkey];
+				if (pkey in CLP_args) {
+					args[pkey]=CLP_args[pkey];
 				}
 				else {
 					if (!param0.optional) {
 						throw new Error('Missing required parameter: '+pkey);
 					}
+					args[pkey]=param0.default_value||'';
 				}
 			}
 			var exe_cmd=pp.exe_command_within_container;
@@ -107,26 +89,30 @@ function do_run(processor_name,args) {
 					for (var ii in pp.outputs) {
 						var output0=pp.outputs[ii];
 						var okey=output0.name;
-						if (okey in CLP.namedParameters) {
-							var ext=get_file_extension(CLP.namedParameters[okey]);
+						if (okey in CLP_args) {
+							var ext=get_file_extension(CLP_args[okey]);
 							var path0=working_path+'/outputs/output_'+okey+'.'+ext;
-							console.log ('Moving '+path0+' -> '+CLP.namedParameters[okey]);
-							move_file_sync(path0,CLP.namedParameters[okey]);
+							console.log ('Moving '+path0+' -> '+CLP_args[okey]);
+							move_file_sync(path0,CLP_args[okey]);
 						}
 					}
 					cleanup(function(tmp) {
 						if (!tmp.success) {
 							console.error('Error cleaning up');
-							process.exit(-1);
 						}
+						callback(null);
+						return;
 					});
 				}
 				catch(err2) {
 					console.error (err2.stack);
 					console.error(err2.message);
 					cleanup(function(tmp) {
-						if (!tmp.success) console.error(tmp.error);
-						process.exit(-1);
+						if (!tmp.success) {
+							console.error(tmp.error);
+						}
+						callback(err2.message);
+						return;
 					});		
 				}
 			});
@@ -136,9 +122,9 @@ function do_run(processor_name,args) {
 			console.error(err.message);
 			cleanup(function(tmp) {
 				if (!tmp.success) console.error(tmp.error);
-				process.exit(-1);
-			});
-			
+				callback(err.message);
+				return;
+			});	
 		}
 
 		function cleanup(callback) {
@@ -149,20 +135,6 @@ function do_run(processor_name,args) {
 			});
 		}
 	});
-}
-
-function read_spec() {
-	var spec_fname=mldock_config_path+'/mldock.spec';
-	if (!fs.existsSync(spec_fname)) {
-		return {processors:[]};
-	}
-	var txt=fs.readFileSync(spec_fname,'utf-8');
-	var spec=try_parse_json(txt);
-	if (!spec) {
-		console.error('Error parsing json file: '+spec_fname);
-		return null;
-	}
-	return spec;
 }
 
 function find_processor_from_spec(spec,pname) {
@@ -177,12 +149,14 @@ function find_processor_from_spec(spec,pname) {
 function create_working_directory(callback) {
 	system_call('mlconfig tmp',{print_console:false},function(err,tmp) {
 		if (err) {
-			throw new Error("Error in system call: mlconfig tmp: "+err);
+			callback(err);
+			return;
 		}
 		var tmppath=tmp.console_out.trim();
-		var path=tmppath+'/mldock_working_'+make_random_id(6);
-		fs.mkdirSync(path);
-		callback(path);
+		var path=tmppath+'/mpdock_working_'+make_random_id(6);
+		require('fs').mkdirSync(path);
+		callback(null,path);
+		// TODO: clean up old mpdock_working_* directories that may not have gotten removed, despite our very best efforts
 	});
 }
 
@@ -213,7 +187,7 @@ function run_docker_container(image_tag,docker_options,cmd,opts,callback) {
 }
 
 function move_file_sync(src,dst) {
-	if (fs.existsSync(dst))
+	if (require('fs').existsSync(dst))
 		require('child_process').execSync('rm '+dst);
 	require('child_process').execSync('mv '+src+' '+dst);
 }
@@ -255,44 +229,6 @@ function system_call(cmd,opts,callback) {
 	});
 };
 
-function try_parse_json(txt) {
-	try {
-		return JSON.parse(txt);
-	}
-	catch(err) {
-		return null;
-	}
-}
-
-function CLParams(argv) {
-	this.unnamedParameters=[];
-	this.namedParameters={};
-
-	var args=argv.slice(2);
-	for (var i=0; i<args.length; i++) {
-		var arg0=args[i];
-		if (arg0.indexOf('--')===0) {
-			arg0=arg0.slice(2);
-			var ind=arg0.indexOf('=');
-			if (ind>=0) {
-				this.namedParameters[arg0.slice(0,ind)]=arg0.slice(ind+1);
-			}
-			else {
-				//this.namedParameters[arg0]=args[i+1]||'';
-				//i++;
-				this.namedParameters[arg0]='';
-			}
-		}
-		else if (arg0.indexOf('-')===0) {
-			arg0=arg0.slice(1);
-			this.namedParameters[arg0]='';
-		}
-		else {
-			this.unnamedParameters.push(arg0);
-		}
-	}
-};
-
 function make_random_id(len) {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -305,7 +241,7 @@ function make_random_id(len) {
 
 function mkdir_if_needed(path) {
   try {
-    fs.mkdirSync(path);
+    require('fs').mkdirSync(path);
   }
   catch(err) {
   }

@@ -11,10 +11,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs
 Description: Data processing, sharing and visualization software for scientists.
  The software comprises tools for processing electrophysiological recordings and for visualizing and validating the results.
 
-Package: mountainlab-mldock
+Package: mountainlab-mpdock
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs, docker.io
 Recommends: octave
-Description: mldock is a tool for mountainlab.
- The mldock tool allows one to run mountainlab processors in docker containers.
+Description: mpdock is a tool for mountainlab.
+ The mpdock tool allows one to run mountainlab processors in docker containers.
 

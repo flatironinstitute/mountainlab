@@ -1,0 +1,107 @@
+#!/usr/bin/env nodejs
+
+var mpdock_update_package=require(__dirname+'/mpdock_update_package.js').mpdock_update_package;
+var mpdock_exec=require(__dirname+'/mpdock_exec.js').mpdock_exec;
+
+function print_usage() {
+	console.log ('Usage:');
+	console.log ('mpdock update --package_uri=[git_uri]');
+	console.log ('mpdock spec --package_uri=[git_uri]');
+	console.log ('mpdock exec --package_uri=[git_uri] [processor_name] --[key1]=[val1] --[key2]=[val2] ...');
+}
+
+mkdir_if_needed(require('os').homedir()+'/.mountainlab')
+var mpdock_config_path=require('os').homedir()+'/.mountainlab/mpdock';
+mkdir_if_needed(mpdock_config_path);
+
+var CLP=new CLParams(process.argv);
+
+var arg1=CLP.unnamedParameters[0]||'';
+var arg2=CLP.unnamedParameters[1]||'';
+if (!arg1) {
+	print_usage();
+	process.exit(-1);
+}
+
+var package_uri=CLP.namedParameters.package_uri;
+if (!package_uri) {
+	print_usage();
+	process.exit(-1);
+}
+
+if (arg1=='update') {
+	mpdock_update_package(package_uri,{build:true,verbose:true},function(err,spec) {
+		if (err) {
+			console.error('Error: '+err);
+			process.exit(-1);
+		}
+		console.log( `Package updated successfully. Loaded ${(spec.processors||[]).length} processors.`);
+	});
+}
+else if (arg1=='spec') {
+	mpdock_update_package(package_uri,{build:false,verbose:false},function(err,spec) {
+		if (err) {
+			console.error('Error: '+err);
+			process.exit(-1);
+		}
+		console.log (JSON.stringify(spec,null,4));
+	});
+}
+else if (arg1=='exec') {
+	console.log ('Reading spec from package: '+package_uri);
+	mpdock_update_package(package_uri,{build:false,verbose:false},function(err,spec) {
+		if (err) {
+			console.error('Error: '+err);
+			process.exit(-1);
+		}
+		var processor_name=arg2;
+		mpdock_exec(processor_name,spec,CLP.namedParameters,function(err) {
+			if (err) {
+				console.error(err);
+				process.exit(-1);
+			}
+			return;
+		});
+	});
+}
+else {
+	console.error('Unrecognized command: '+arg1);
+}
+
+function mkdir_if_needed(path) {
+	try {
+		require('fs').mkdirSync(path);
+	}
+	catch(err) {
+
+	}
+}
+
+function CLParams(argv) {
+	this.unnamedParameters=[];
+	this.namedParameters={};
+
+	var args=argv.slice(2);
+	for (var i=0; i<args.length; i++) {
+		var arg0=args[i];
+		if (arg0.indexOf('--')===0) {
+			arg0=arg0.slice(2);
+			var ind=arg0.indexOf('=');
+			if (ind>=0) {
+				this.namedParameters[arg0.slice(0,ind)]=arg0.slice(ind+1);
+			}
+			else {
+				//this.namedParameters[arg0]=args[i+1]||'';
+				//i++;
+				this.namedParameters[arg0]='';
+			}
+		}
+		else if (arg0.indexOf('-')===0) {
+			arg0=arg0.slice(1);
+			this.namedParameters[arg0]='';
+		}
+		else {
+			this.unnamedParameters.push(arg0);
+		}
+	}
+};
