@@ -37,6 +37,7 @@ public:
 
     QStringList m_processor_paths;
     QMap<QString, MLProcessor> m_processors;
+    QString m_package_uri;
 
     void reload_processors();
 
@@ -55,6 +56,11 @@ ProcessorManager::~ProcessorManager()
     delete d;
 }
 
+void ProcessorManager::setPackageURI(const QString &uri)
+{
+    d->m_package_uri = uri;
+}
+
 void ProcessorManager::setProcessorPaths(const QStringList& paths)
 {
     d->m_processor_paths = paths;
@@ -68,20 +74,75 @@ void ProcessorManager::reloadProcessors()
 
 bool ProcessorManager::loadProcessors(const QString& path, bool recursive)
 {
-    QStringList fnames = QDir(path).entryList(QStringList("*.mp"), QDir::Files, QDir::Name);
-    foreach (QString fname, fnames) {
-        if (!this->loadProcessorFile(path + "/" + fname)) {
-            //return false;
+    if (d->m_package_uri.isEmpty()) {
+        QStringList fnames = QDir(path).entryList(QStringList("*.mp"), QDir::Files, QDir::Name);
+        foreach (QString fname, fnames) {
+            if (!this->loadProcessorFile(path + "/" + fname)) {
+                //return false;
+            }
         }
+        if (recursive) {
+            QStringList subdirs = QDir(path).entryList(QStringList("*"), QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+            foreach (QString subdir, subdirs) {
+                if (!this->loadProcessors(path + "/" + subdir))
+                    return false;
+            }
+        }
+        return true;
     }
-    if (recursive) {
-        QStringList subdirs = QDir(path).entryList(QStringList("*"), QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-        foreach (QString subdir, subdirs) {
-            if (!this->loadProcessors(path + "/" + subdir))
+    else {
+        QString mpdock_exe = qApp->applicationDirPath()+"/../packages/system/mpdock/mpdock";
+        if (!QFile::exists(mpdock_exe)) {
+            mpdock_exe = "/opt/mountainlab/packages/mpdock/mpdock";
+            if (!QFile::exists(mpdock_exe)) {
+                qWarning() << "Unable to find mpdock executable.";
                 return false;
+            }
         }
+        QString command = QString("%1 --package_uri=%2 spec").arg(mpdock_exe).arg(d->m_package_uri);
+        QProcess p;
+        p.start(command);
+        if (!p.waitForStarted()) {
+            qWarning() << "Unable to run command: "+command;
+            return false;
+        }
+        if (!p.waitForFinished(60000)) {
+            qWarning() << "Error waiting for command to finish: "+command;
+            return false;
+        }
+        if (p.exitCode()!=0) {
+            qWarning() << p.readAll();
+            qWarning() << "Error running command: "+command;
+            return false;
+        }
+        p.waitForReadyRead();
+        QString json = p.readAllStandardOutput();
+        QJsonParseError error;
+        QJsonObject obj = QJsonDocument::fromJson(json.toLatin1(), &error).object();
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(MPM) << "Json parse error when loading processor plugin: " << error.errorString();
+            return false;
+        }
+        if (!obj["processors"].isArray()) {
+            qCWarning(MPM) << "Problem with processor file: processors field is missing or not any array: " + path;
+            return false;
+        }
+        QJsonArray processors = obj["processors"].toArray();
+        for (int i = 0; i < processors.count(); i++) {
+            if (!processors[i].isObject()) {
+                qCWarning(MPM) << "Problem with processor file: processor is not an object: " + path;
+                return false;
+            }
+            MLProcessor P = d->create_processor_from_json_object(processors[i].toObject());
+            if (P.name.isEmpty()) {
+                qCDebug(MPM) << QJsonDocument(processors[i].toObject()).toJson();
+                qCWarning(MPM) << "Problem with processor file: processor error: " + path;
+                return false;
+            }
+            d->m_processors[P.name] = P;
+        }
+        return true;
     }
-    return true;
 }
 
 bool ProcessorManager::loadProcessorFile(const QString& path)
@@ -277,7 +338,7 @@ MLProcessor ProcessorManagerPrivate::create_processor_from_json_object(QJsonObje
     P.name = obj["name"].toString();
     P.version = obj["version"].toString();
     P.description = obj["description"].toString();
-    P.package_url = obj["package_url"].toString();
+    P.package_uri = obj["package_uri"].toString();
 
     QJsonArray inputs = obj["inputs"].toArray();
     for (int i = 0; i < inputs.count(); i++) {
@@ -324,8 +385,17 @@ void ProcessorManagerPrivate::reload_processors()
 {
     QMap<QString, MLProcessor> saved = m_processors;
     m_processors.clear();
-    foreach (QString processor_path, m_processor_paths) {
-        if (!q->loadProcessors(processor_path)) {
+    if (m_package_uri.isEmpty()) {
+        foreach (QString processor_path, m_processor_paths) {
+            if (!q->loadProcessors(processor_path)) {
+                //something happened, let's revert to saved version
+                m_processors = saved;
+                return;
+            }
+        }
+    }
+    else {
+        if (!q->loadProcessors("")) {
             //something happened, let's revert to saved version
             m_processors = saved;
             return;
