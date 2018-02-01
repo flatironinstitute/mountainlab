@@ -34,7 +34,7 @@ struct MLProcessInfo {
 
 void sig_handler(int signum);
 
-bool list_processors(QVariantMap clp);
+bool list_processors(const QString &pattern, QVariantMap clp);
 bool spec(QString arg2, QVariantMap clp);
 bool requirements(QString arg2, const QMap<QString, QVariant> &clp = QMap<QString, QVariant>());
 bool test_processor(QString arg2, QVariantMap clp);

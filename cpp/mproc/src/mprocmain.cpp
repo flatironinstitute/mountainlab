@@ -49,7 +49,7 @@ void print_usage()
     printf("mproc spec [processor_name]\n");
     printf("mproc requirements [processor_name]\n");
     printf("mproc test [processor_name]\n");
-    printf("mproc --help");
+    printf("mproc --help\n");
 }
 
 int main(int argc, char* argv[])
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     setbuf(stdout, NULL);
 
     if (arg1 == "list-processors") { //Provide a human-readable list of the available processors
-        if (list_processors(CLP.named_parameters))
+        if (list_processors(arg2, CLP.named_parameters))
             return 0;
         else
             return -1;
@@ -218,7 +218,7 @@ bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
     return true;
 }
 
-bool list_processors(QVariantMap clp)
+bool list_processors(const QString &pattern, QVariantMap clp)
 {
     ProcessorManager PM;
     QString package_uri=clp["_package_uri"].toString();
@@ -227,10 +227,17 @@ bool list_processors(QVariantMap clp)
     if (!initialize_processor_manager(PM, &errstr))
         return false;
 
+    QTextStream qout(stdout);
+
     QStringList pnames = PM.processorNames();
     qSort(pnames);
+    QRegExp rxWild(pattern);
+    QRegExp rx(pattern);
+    rx.setPatternSyntax(QRegExp::RegExp);
+    rxWild.setPatternSyntax(QRegExp::WildcardUnix);
     foreach (QString pname, pnames) {
-        qDebug().noquote() << pname;
+        if (pattern.isEmpty() || (rxWild.exactMatch(pname) || rx.exactMatch(pname)))
+            qout << pname << endl;
     }
     return true;
 }
