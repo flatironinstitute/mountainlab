@@ -35,7 +35,7 @@ struct MLProcessor {
     QString name;
     QString version;
     QString description;
-    QString package_url;
+    QString package_uri;
     QMap<QString, MLParameter> inputs;
     QMap<QString, MLParameter> outputs;
     QMap<QString, MLParameter> parameters;
@@ -54,6 +54,7 @@ public:
     ProcessorManager();
     virtual ~ProcessorManager();
 
+    void setPackageURI(const QString &uri);
     void setProcessorPaths(const QStringList& paths);
     void reloadProcessors();
 

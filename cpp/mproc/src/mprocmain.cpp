@@ -89,13 +89,13 @@ int main(int argc, char* argv[])
     setbuf(stdout, NULL);
 
     if (arg1 == "list-processors") { //Provide a human-readable list of the available processors
-        if (list_processors())
+        if (list_processors(CLP.named_parameters))
             return 0;
         else
             return -1;
     }
     else if (arg1 == "spec") { // Show the spec for a single processor
-        if (spec(arg2))
+        if (spec(arg2, CLP.named_parameters))
             return 0;
         else
             return -1;
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
             return -1;
     }
     else if (arg1 == "test") { // Run test for a single processor
-        if (test_processor(arg2))
+        if (test_processor(arg2, CLP.named_parameters))
             return 0;
         else
             return -1;
@@ -141,6 +141,8 @@ int main(int argc, char* argv[])
             }
             else {
                 ProcessorManager PM;
+                QString package_uri=request["package_uri"].toString();
+                PM.setPackageURI(package_uri);
                 QString errstr;
                 if (!initialize_processor_manager(PM, &errstr)) {
                     response["error"] = "Failed to initialize process manager: " + errstr;
@@ -216,9 +218,11 @@ bool initialize_processor_manager(ProcessorManager& PM, QString* error_str)
     return true;
 }
 
-bool list_processors()
+bool list_processors(QVariantMap clp)
 {
     ProcessorManager PM;
+    QString package_uri=clp["_package_uri"].toString();
+    PM.setPackageURI(package_uri);
     QString errstr;
     if (!initialize_processor_manager(PM, &errstr))
         return false;
@@ -247,6 +251,8 @@ bool requirements(QString arg2, const QMap<QString, QVariant> &clp)
     }
     qInstallMessageHandler(silent_message_output);
     ProcessorManager PM;
+    QString package_uri=clp["_package_uri"].toString();
+    PM.setPackageURI(package_uri);
     QString errstr;
     if (!initialize_processor_manager(PM, &errstr)) {
         return false;
@@ -264,10 +270,13 @@ bool requirements(QString arg2, const QMap<QString, QVariant> &clp)
     return true;
 }
 
-bool spec(QString arg2)
+bool spec(QString arg2,QVariantMap clp)
 {
     qInstallMessageHandler(silent_message_output);
     ProcessorManager PM;
+    QString package_uri=clp["_package_uri"].toString();
+    printf("package_uri=%s\n",package_uri.toUtf8().data());
+    PM.setPackageURI(package_uri);
     QString errstr;
     if (!initialize_processor_manager(PM, &errstr)) {
         return false;
@@ -305,9 +314,11 @@ void test_processor(const MLProcessor& MLP)
     }
 }
 
-bool test_processor(QString arg2)
+bool test_processor(QString arg2,QVariantMap clp)
 {
     ProcessorManager PM;
+    QString package_uri=clp["_package_uri"].toString();
+    PM.setPackageURI(package_uri);
     QString errstr;
     if (!initialize_processor_manager(PM, &errstr)) {
         return false;
@@ -362,7 +373,11 @@ int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>&
     MLProcessInfo info;
 
     QString processor_name = arg2;
+
     ProcessorManager PM;
+    QString package_uri=clp["_package_uri"].toString();
+    PM.setPackageURI(package_uri);
+
     QString error_str;
     MLProcessor MLP;
     if (!initialize_processor_manager(PM, &error_str)) {
@@ -375,15 +390,6 @@ int exec_run_or_queue(QString arg1, QString arg2, const QMap<QString, QVariant>&
     if (MLP.name != processor_name) {
         info.exit_code = -1;
         info.error = "Unable to find processor: " + processor_name;
-        qCWarning(MP) << info.error;
-        finalize(arg1, MLP, clp, info);
-        return info.exit_code;
-    }
-
-    QString package_url=clp["_package_url"].toString();
-    if (MLP.package_url!=package_url) {
-        info.exit_code=-1;
-        info.error = "Package url does not match: "+MLP.package_url+" <> "+package_url;
         qCWarning(MP) << info.error;
         finalize(arg1, MLP, clp, info);
         return info.exit_code;
@@ -791,7 +797,7 @@ QJsonObject compute_unique_process_object(MLProcessor P, const QVariantMap& para
     obj["mountainprocess_version"] = "0.1";
     obj["processor_name"] = P.name;
     obj["processor_version"] = P.version;
-    obj["package_url"] = P.package_url;
+    obj["package_uri"] = P.package_uri;
     {
         QJsonObject inputs;
         QStringList input_pnames = P.inputs.keys();
