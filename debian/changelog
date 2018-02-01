@@ -1,3 +1,9 @@
+mountainlab (0.5.7) xenial; urgency=medium
+
+  * implement mpdock and cleanup
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Wed, 31 Jan 2018 21:02:25 -0500
+
 mountainlab (0.5.6) xenial; urgency=medium
 
   * change toBool to toVariant().toBool for QJsonObject
