@@ -282,7 +282,6 @@ bool spec(QString arg2,QVariantMap clp)
     qInstallMessageHandler(silent_message_output);
     ProcessorManager PM;
     QString package_uri=clp["_package_uri"].toString();
-    printf("package_uri=%s\n",package_uri.toUtf8().data());
     PM.setPackageURI(package_uri);
     QString errstr;
     if (!initialize_processor_manager(PM, &errstr)) {
