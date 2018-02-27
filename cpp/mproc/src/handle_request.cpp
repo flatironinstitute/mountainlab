@@ -33,7 +33,7 @@
 Q_LOGGING_CATEGORY(RB, "mp.run_as_bash")
 Q_LOGGING_CATEGORY(HR, "mp.handle_request")
 
-QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_uri, QString prvbucket_path, ProcessorManager* PM);
+QJsonObject handle_request_queue_process(QString processor_name, QString processor_version, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_uri, QString prvbucket_path, ProcessorManager* PM);
 QJsonObject handle_request_processor_spec(ProcessorManager* PM);
 
 QJsonObject handle_request(const QJsonObject& request, QString prvbucket_path, ProcessorManager* PM)
@@ -52,11 +52,12 @@ QJsonObject handle_request(const QJsonObject& request, QString prvbucket_path, P
             response["error"] = "Processor name is empty";
             return response;
         }
+        QString processor_version = request["processor_version"].toString();
 
         qCInfo(HR) << "Starting handle_request_queue_process: " + processor_name;
         QTime timer;
         timer.start();
-        response = handle_request_queue_process(processor_name, request["inputs"].toObject(), request["outputs"].toObject(), request["parameters"].toObject(), request["resources"].toObject(), request["package_uri"].toString(), prvbucket_path, PM);
+        response = handle_request_queue_process(processor_name, processor_version, request["inputs"].toObject(), request["outputs"].toObject(), request["parameters"].toObject(), request["resources"].toObject(), request["package_uri"].toString(), prvbucket_path, PM);
         qCInfo(HR) << "Done running process: " + processor_name << "Elapsed:" << timer.elapsed();
         return response;
     }
@@ -118,7 +119,7 @@ QJsonObject handle_request_processor_spec(ProcessorManager* PM)
     return response;
 }
 
-QJsonObject handle_request_queue_process(QString processor_name, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_uri, QString prvbucket_path, ProcessorManager* PM)
+QJsonObject handle_request_queue_process(QString processor_name, QString processor_version, const QJsonObject& inputs, const QJsonObject& outputs, const QJsonObject& parameters, const QJsonObject& resources, QString package_uri, QString prvbucket_path, ProcessorManager* PM)
 {
     QJsonObject response;
 
@@ -127,6 +128,14 @@ QJsonObject handle_request_queue_process(QString processor_name, const QJsonObje
         response["success"] = false;
         response["error"] = "Unable to find processor: " + processor_name;
         return response;
+    }
+
+    if (!processor_version.isEmpty()) {
+        if (processor_version!=PP.version) {
+            response["success"] = false;
+            response["error"] = QString("Incorrect processor version for processor %1: %2 <> %3").arg(processor_name).arg(processor_version).arg(PP.version);
+            return response;
+        }
     }
 
     QStringList args;
