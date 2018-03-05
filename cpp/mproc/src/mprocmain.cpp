@@ -33,6 +33,9 @@
 
 #include "signal.h"
 #include <unistd.h>
+#ifdef Q_OS_LINUX
+#include <sys/ioctl.h>
+#endif
 
 Q_LOGGING_CATEGORY(MP, "mproc.main")
 
@@ -95,6 +98,12 @@ int main(int argc, char* argv[])
             return -1;
     }
     else if (arg1 == "spec") { // Show the spec for a single processor
+        if (arg2 == "-h") {
+            if (spec(arg3, CLP.named_parameters, true))
+                return 0;
+            else
+                return -1;
+        }
         if (spec(arg2, CLP.named_parameters))
             return 0;
         else
@@ -277,7 +286,61 @@ bool requirements(QString arg2, const QMap<QString, QVariant> &clp)
     return true;
 }
 
-bool spec(QString arg2,QVariantMap clp)
+void humanize_set(QJsonArray data, const QString &name) {
+    QTextStream qout(stdout);
+    qout << name << endl;
+    // find the longest name
+    int longest = 0;
+    for (auto iter : data) {
+        QJsonObject item = iter.toObject();
+        longest = qMax(longest, item["name"].toString().size());
+    }
+#ifdef Q_OS_LINUX
+    struct winsize size;
+    ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+    const int width = size.ws_col;
+#else
+    const int width = 80;
+#endif
+    const int columnSize = width - longest - 3;
+    for (auto iter : data) {
+        int firstCol = columnSize;
+        QJsonObject item = iter.toObject();
+        qout << "  " <<  item["name"].toString().leftJustified(longest);
+        qout << " ";
+        if (item["optional"].toBool()) {
+            firstCol -= 11;
+            qout << "\x1b[31m(optional)\x1b[0m ";
+        }
+        QString desc = item["description"].toString();
+        while (!desc.isEmpty()) {
+            QString candidate = desc.left(firstCol);
+            if (candidate.size() == firstCol) {
+                int lastSpace = candidate.lastIndexOf(QRegExp("\\s"));
+                if (lastSpace > 0)
+                    candidate = candidate.left(lastSpace+1);
+            }
+            qout << candidate << endl;
+            desc = desc.mid(candidate.length());
+            firstCol = columnSize;
+            if (!desc.isEmpty())
+                qout << QString(width-columnSize, ' ');
+        }
+//        qout << endl;
+    }
+}
+
+void humanize(QJsonDocument doc) {
+    QJsonObject spec = doc.object();
+    QTextStream qout(stdout);
+    qout << spec["description"].toString() << endl;
+    qout << endl;
+    humanize_set(spec["inputs"].toArray(), "\x1b[32mINPUTS\x1b[0m");
+    humanize_set(spec["outputs"].toArray(), "\x1b[32mOUTPUTS\x1b[0m");
+    humanize_set(spec["parameters"].toArray(), "\x1b[32mPARAMETERS\x1b[0m");
+}
+
+bool spec(QString arg2,QVariantMap clp, bool human)
 {
     qInstallMessageHandler(silent_message_output);
     ProcessorManager PM;
@@ -289,8 +352,12 @@ bool spec(QString arg2,QVariantMap clp)
     }
     if (!arg2.isEmpty()) {
         MLProcessor MLP = PM.processor(arg2);
-        QString json = QJsonDocument(MLP.spec).toJson(QJsonDocument::Indented);
-        printf("%s\n", json.toLatin1().data());
+        if (human)
+            humanize(QJsonDocument(MLP.spec));
+        else {
+            QString json = QJsonDocument(MLP.spec).toJson(QJsonDocument::Indented);
+            printf("%s\n", json.toLatin1().data());
+        }
     }
     else {
         QJsonArray processors_array;
