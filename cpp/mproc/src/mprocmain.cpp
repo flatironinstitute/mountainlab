@@ -313,6 +313,8 @@ void humanize_set(QJsonArray data, const QString &name) {
             qout << "\x1b[31m(optional)\x1b[0m ";
         }
         QString desc = item["description"].toString();
+        if (desc.isEmpty())
+            qout << endl;
         while (!desc.isEmpty()) {
             QString candidate = desc.left(firstCol);
             if (candidate.size() == firstCol) {
@@ -326,7 +328,6 @@ void humanize_set(QJsonArray data, const QString &name) {
             if (!desc.isEmpty())
                 qout << QString(width-columnSize, ' ');
         }
-//        qout << endl;
     }
 }
 
