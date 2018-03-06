@@ -286,14 +286,40 @@ bool requirements(QString arg2, const QMap<QString, QVariant> &clp)
     return true;
 }
 
-void humanize_set(QJsonArray data, const QString &name) {
+void consoleOutput(QTextStream& qout, QString text, size_t indent = 0, int firstColumn = 0) {
+#ifdef Q_OS_LINUX
+    struct winsize size;
+    ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+    const int width = size.ws_col;
+#else
+    const int width = 80;
+#endif
+    const int columnSize = width - indent;
+    int lineWidth = columnSize - firstColumn;
+    while (!text.isEmpty()) {
+        QString candidate = text.left(lineWidth);
+        if (candidate.size() == lineWidth) {
+            int lastSpace = candidate.lastIndexOf(QRegExp("\\s"));
+            if (lastSpace > 0)
+                candidate = candidate.left(lastSpace+1);
+        }
+        qout << candidate << endl;
+        text = text.mid(candidate.length());
+        lineWidth = columnSize;
+        if (!text.isEmpty() && indent)
+            qout << QString(indent, ' ');
+    }
+}
+
+void humanize_set(QJsonArray data, const QString &name, int longest = 0) {
     QTextStream qout(stdout);
     qout << name << endl;
     // find the longest name
-    int longest = 0;
-    for (auto iter : data) {
-        QJsonObject item = iter.toObject();
-        longest = qMax(longest, item["name"].toString().size());
+    if (longest == 0) {
+        for (auto iter : data) {
+            QJsonObject item = iter.toObject();
+            longest = qMax(longest, item["name"].toString().size());
+        }
     }
 #ifdef Q_OS_LINUX
     struct winsize size;
@@ -313,32 +339,28 @@ void humanize_set(QJsonArray data, const QString &name) {
             qout << "\x1b[31m(optional)\x1b[0m ";
         }
         QString desc = item["description"].toString();
-        if (desc.isEmpty())
-            qout << endl;
-        while (!desc.isEmpty()) {
-            QString candidate = desc.left(firstCol);
-            if (candidate.size() == firstCol) {
-                int lastSpace = candidate.lastIndexOf(QRegExp("\\s"));
-                if (lastSpace > 0)
-                    candidate = candidate.left(lastSpace+1);
-            }
-            qout << candidate << endl;
-            desc = desc.mid(candidate.length());
-            firstCol = columnSize;
-            if (!desc.isEmpty())
-                qout << QString(width-columnSize, ' ');
-        }
+        consoleOutput(qout, desc, longest+3, item["optional"].toBool() ? 11 : 0);
     }
 }
 
 void humanize(QJsonDocument doc) {
     QJsonObject spec = doc.object();
     QTextStream qout(stdout);
+    int longest = 0;
+    for (auto key : { "inputs", "outputs", "parameters"}) {
+        for (auto iter : spec[key].toArray()) {
+            QJsonObject item = iter.toObject();
+            longest = qMax(longest, item["name"].toString().size());
+        }
+    }
     qout << spec["description"].toString() << endl;
     qout << endl;
-    humanize_set(spec["inputs"].toArray(), "\x1b[32mINPUTS\x1b[0m");
-    humanize_set(spec["outputs"].toArray(), "\x1b[32mOUTPUTS\x1b[0m");
-    humanize_set(spec["parameters"].toArray(), "\x1b[32mPARAMETERS\x1b[0m");
+    humanize_set(spec["inputs"].toArray(), "\x1b[32mINPUTS\x1b[0m", longest);
+    qout << endl;
+    humanize_set(spec["outputs"].toArray(), "\x1b[32mOUTPUTS\x1b[0m", longest);
+    qout << endl;
+    humanize_set(spec["parameters"].toArray(), "\x1b[32mPARAMETERS\x1b[0m", longest);
+    qout << endl;
 }
 
 bool spec(QString arg2,QVariantMap clp, bool human)
