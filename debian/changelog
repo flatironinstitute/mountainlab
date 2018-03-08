@@ -1,3 +1,9 @@
+mountainlab (0.5.10) xenial; urgency=medium
+
+  * -h option for mp-spec
+
+ -- Jeremy Magland <jmagland@simonsfoundation.org>  Thu, 08 Mar 2018 17:59:47 -0500
+
 mountainlab (0.5.9) xenial; urgency=medium
 
   * fix console output of mp-spec
