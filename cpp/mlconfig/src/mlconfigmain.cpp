@@ -18,13 +18,14 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QDebug>
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QDir>
 
 #include "mlcommon.h"
 #include "mlconfigpage.h"
+
+QTextStream qout(stdout);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 class Tempdir_Q1 : public MLConfigQuestion {
@@ -46,11 +47,11 @@ public:
             return true;
         QString new_path = str.trimmed();
         if (!QFileInfo(new_path).isAbsolute()) {
-            qDebug().noquote() << "You must enter an absolute path.";
+            qout << "You must enter an absolute path." << endl;
             return false;
         }
         if ((!QFile::exists(new_path)) || (!QFileInfo(new_path).isDir())) {
-            qDebug().noquote() << "Directory does not exist: " + new_path;
+            qout << "Directory does not exist: " + new_path << endl;
             return false;
         }
         QJsonObject gen = config()->value("general").toObject();
@@ -124,14 +125,14 @@ public:
         }
         else {
             if (!QFileInfo(path).isAbsolute()) {
-                qDebug().noquote() << "You must enter an absolute path.";
+                qout << "You must enter an absolute path." << endl;
                 return false;
             }
             if (local_search_paths.contains(path)) {
                 local_search_paths.removeAll(path);
             }
             else if ((!QFile::exists(path)) || (!QFileInfo(path).isDir())) {
-                qDebug().noquote() << "Directory does not exist: " + path;
+                qout << "Directory does not exist: " + path << endl;
                 return false;
             }
             else {
@@ -179,7 +180,7 @@ int main(int argc, char* argv[])
     if ((argc==2)&&(QString(argv[1])=="tmp")) {
         QJsonObject gen = config.value("general").toObject();
         QString temporary_path = gen["temporary_path"].toString();
-        qDebug().noquote() << temporary_path;
+        qout << temporary_path << endl;
         return 0;
     }
 
@@ -193,21 +194,21 @@ int main(int argc, char* argv[])
     pages << new Page_tempdir(&config);
     pages << new Page_prv(&config);
 
-    qDebug().noquote() << "___MountainLab interactive configuration utility___";
-    qDebug().noquote() << "";
+    qout << "___MountainLab interactive configuration utility___" << endl;
+    qout << endl;
 
     foreach (MLConfigPage* page, pages) {
-        qDebug().noquote() << "****************************************************";
-        qDebug().noquote() << "*** " + page->title() + " ***";
+        qout << "****************************************************" << endl;
+        qout << "*** " + page->title() + " ***" << endl;
         QString descr = format_description(page->description(), 60);
-        qDebug().noquote() << descr;
-        qDebug().noquote() << "";
+        qout << descr << endl;
+        qout << endl;
         for (int i = 0; i < page->questionCount(); i++) {
             QString str = page->question(i)->ask();
-            qDebug().noquote() << str;
+            qout << str << endl;
             QString resp = get_keyboard_response();
             if (!page->question(i)->processResponse(resp)) {
-                qDebug().noquote() << "";
+                qout << endl;
                 i--;
             }
         }
