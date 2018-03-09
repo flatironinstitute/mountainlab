@@ -21,11 +21,75 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QDir>
+#ifdef Q_OS_LINUX
+#include <unistd.h>
+#include <sys/ioctl.h>
+#endif
 
 #include "mlcommon.h"
 #include "mlconfigpage.h"
 
 QTextStream qout(stdout);
+
+QTextStream& yellow(QTextStream &stream) {
+    stream << "\x1b[93m";
+    return stream;
+}
+
+QTextStream& reset(QTextStream &stream) {
+    stream << "\x1b[0m";
+    return stream;
+}
+
+QTextStream& red(QTextStream &stream) {
+    stream << "\x1b[31m";
+    return stream;
+}
+
+QTextStream& green(QTextStream &stream) {
+    stream << "\x1b[32m";
+    return stream;
+}
+
+QTextStream& white(QTextStream &stream) {
+    stream << "\x1b[37m";
+    return stream;
+}
+
+QTextStream& bold(QTextStream &stream) {
+    stream << "\x1b[1m";
+    return stream;
+}
+
+QTextStream& underline(QTextStream &stream) {
+    stream << "\x1b[4m";
+    return stream;
+}
+
+void consoleOutput(QTextStream& qout, QString text, size_t indent = 0, int firstColumn = 0) {
+#ifdef Q_OS_LINUX
+    struct winsize size;
+    ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+    const int width = size.ws_col;
+#else
+    const int width = 80;
+#endif
+    const int columnSize = width - indent;
+    int lineWidth = columnSize - firstColumn;
+    while (!text.isEmpty()) {
+        QString candidate = text.left(lineWidth);
+        if (candidate.size() == lineWidth) {
+            int lastSpace = candidate.lastIndexOf(QRegExp("\\s"));
+            if (lastSpace > 0)
+                candidate = candidate.left(lastSpace+1);
+        }
+        qout << candidate << endl;
+        text = text.mid(candidate.length());
+        lineWidth = columnSize;
+        if (!text.isEmpty() && indent)
+            qout << QString(indent, ' ');
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 class Tempdir_Q1 : public MLConfigQuestion {
@@ -37,7 +101,7 @@ public:
     {
         QJsonObject gen = config()->value("general").toObject();
         QString temporary_path = gen["temporary_path"].toString();
-        QString str = "Current temporary path: " + temporary_path + "\n";
+        QString str = "Current temporary path: \x1b[1m" + temporary_path + "\x1b[0m\n";
         str += "Type new path or enter to keep same:";
         return str;
     }
@@ -108,8 +172,8 @@ public:
     {
         QJsonObject prv = config()->value("prv").toObject();
         QStringList local_search_paths = json_array_to_stringlist(prv["local_search_paths"].toArray());
-        QString str = "Current prv search paths:\n     " + local_search_paths.join("\n     ");
-        str += "\n";
+        QString str = "Current prv search paths:\n     \x1b[1m" + local_search_paths.join("\n     ");
+        str += "\x1b[0m\n";
         str += "Type in a path to add or delete, or press enter to keep those listed above:";
         return str;
     }
@@ -193,15 +257,25 @@ int main(int argc, char* argv[])
     QList<MLConfigPage*> pages;
     pages << new Page_tempdir(&config);
     pages << new Page_prv(&config);
-
-    qout << "___MountainLab interactive configuration utility___" << endl;
+    qout << endl;
+    qout << underline << "   MountainLab interactive configuration utility   " << reset << endl;
     qout << endl;
 
     foreach (MLConfigPage* page, pages) {
-        qout << "****************************************************" << endl;
-        qout << "*** " + page->title() + " ***" << endl;
-        QString descr = format_description(page->description(), 60);
-        qout << descr << endl;
+        qout << "****************************************************" << endl; // len=52
+        QTextStream::FieldAlignment al = qout.fieldAlignment();
+        qout << "*** " << bold;
+        qout.setFieldWidth(52-8);
+        qout.setFieldAlignment(QTextStream::AlignCenter);
+        qout << page->title();
+        qout.setFieldWidth(0);
+        qout.setFieldAlignment(al);
+        qout << reset << " ***" << endl;
+        qout << "****************************************************" << endl; // len=52
+//        QString descr = format_description(page->description(), 60);
+        qout << endl;
+        consoleOutput(qout, page->description(), 0, 0);
+
         qout << endl;
         for (int i = 0; i < page->questionCount(); i++) {
             QString str = page->question(i)->ask();
