@@ -34,6 +34,8 @@
 #include "mlcommon.h"
 #include "mlnetwork.h"
 
+QTextStream qout(stdout);
+
 QString get_tmp_path();
 QString get_server_url(QString url_or_server_name);
 QStringList get_local_search_paths();
@@ -873,10 +875,10 @@ private:
         QString url = locate_file(obj, params, false);
 
         if (is_url(url)) {
-            qDebug().noquote() << "File is already on server: " + url;
+            qout << "File is already on server: " + url << endl;
         }
         else {
-            qDebug().noquote() << "";
+            qout << endl;
             QString response;
             while (1) {
                 response = ask_question(QString("Upload %1 to %2? ([y]/n): ").arg(fname).arg(server), "y");
@@ -921,8 +923,7 @@ private:
                 }
                 QString remote_fname = QString("%1.%2").arg(MLUtil::makeRandomId(6)).arg(QFileInfo(fname).fileName());
                 QString cmd = QString("rsync -av --progress %1 %2 %3@%4:%5/%6").arg(args).arg(fname).arg(upload_user).arg(upload_host).arg(upload_path).arg(remote_fname);
-                qDebug().noquote() << "";
-                qDebug().noquote() << cmd;
+                qout << endl << cmd << endl;
                 QString response;
                 while (1) {
                     response = ask_question("Execute this command for upload? ([y]/n]): ", "y");
@@ -931,9 +932,8 @@ private:
                 }
                 if (response == "y") {
                     QString cmd2 = QString("xterm -e bash -c \"echo '%1'; %1; read -p 'Press enter to continue...'\"").arg(cmd);
-                    qDebug().noquote() << "";
-                    qDebug().noquote() << cmd2;
-                    qDebug().noquote() << "\nFile is being uploaded in a new terminal where you will need to upload your password. At the end of the upload you will need to press enter to continue.";
+                    qout << endl << cmd2 << endl;
+                    qout << "\nFile is being uploaded in a new terminal where you will need to upload your password. At the end of the upload you will need to press enter to continue." << endl;
                     int ret = system(cmd2.toUtf8().data());
                     if (ret != 0) {
                         qWarning() << "Error in upload.";
