@@ -2,6 +2,6 @@
 
 Scientific data analysis, sharing, and visualization
 
-**Announcement** We had planned on releasing a new version of MountainLab and MountainSort on April 13th, but it is not quite ready. Aiming for April 27th instead.
+**Announcement** We are moving to a new implementation. Please visit https://github.com/flatironinstitute/mountainlab-js.
 
-For installation and usage information, visit https://mountainsort.readthedocs.org
+For the old installation and usage information, visit https://mountainsort.readthedocs.org
