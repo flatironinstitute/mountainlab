@@ -1,5 +1,3 @@
 # MountainLab
 
-Scientific data analysis, sharing, and visualization
-
-See: https://github.com/flatironinstitute/mountainsort
+This package is obsolete. Instead, please visit: https://github.com/flatironinstitute/mountainlab-js.
